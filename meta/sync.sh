@@ -64,9 +64,25 @@ if [ "$DRY_RUN" = true ]; then
     echo "Dry run mode enabled. No changes will be made."
 fi
 
+if [ "$CLEAN" = true ]; then
+    echo "Clean mode enabled. Interactive cleanup will be performed."
+fi
+
 # Ensure build directories exist
 mkdir -p "$BUILD_DIR/gemini"
 mkdir -p "$BUILD_DIR/claude"
+
+# --- Utilities ---
+
+# Portable way to get absolute path
+get_abs_path() {
+    local path="$1"
+    if [[ "$path" == /* ]]; then
+        echo "$path"
+    else
+        echo "$(pwd)/${path#./}"
+    fi
+}
 
 # --- Transformation Logic ---
 
@@ -78,9 +94,13 @@ if [ -d "$SHARED_SKILLS" ]; then
     for file in "$SHARED_SKILLS"/*.md; do
         if [ -f "$file" ]; then
             filename=$(basename "$file")
-            cp "$file" "$BUILD_DIR/gemini/$filename"
-            if [ "$VERBOSE" = true ]; then
-                echo "Compiled (Copy): $filename -> $BUILD_DIR/gemini/$filename"
+            if [ "$DRY_RUN" = true ]; then
+                [ "$VERBOSE" = true ] && echo "[Dry Run] Would compile (Copy): $filename -> $BUILD_DIR/gemini/$filename"
+            else
+                cp "$file" "$BUILD_DIR/gemini/$filename"
+                if [ "$VERBOSE" = true ]; then
+                    echo "Compiled (Copy): $filename -> $BUILD_DIR/gemini/$filename"
+                fi
             fi
         fi
     done
@@ -97,12 +117,16 @@ if [ -d "$SHARED_SKILLS" ]; then
             name="${filename%.*}"
             target="$BUILD_DIR/claude/${name}.xml"
             
-            echo "<skill name=\"$name\">" > "$target"
-            cat "$file" >> "$target"
-            echo "</skill>" >> "$target"
-            
-            if [ "$VERBOSE" = true ]; then
-                echo "Compiled (XML Wrap): $filename -> $target"
+            if [ "$DRY_RUN" = true ]; then
+                [ "$VERBOSE" = true ] && echo "[Dry Run] Would compile (XML Wrap): $filename -> $target"
+            else
+                echo "<skill name=\"$name\">" > "$target"
+                cat "$file" >> "$target"
+                echo "</skill>" >> "$target"
+                
+                if [ "$VERBOSE" = true ]; then
+                    echo "Compiled (XML Wrap): $filename -> $target"
+                fi
             fi
         fi
     done
@@ -165,7 +189,7 @@ for agent in gemini claude; do
         find "$build_subdir" -type f -not -name ".gitkeep" | while read source_file; do
             filename=$(basename "$source_file")
             target_dest="$TARGET_ROOT/$agent_dot_folder/skills/$filename"
-            safe_symlink "$(readlink -f "$source_file")" "$target_dest"
+            safe_symlink "$(get_abs_path "$source_file")" "$target_dest"
         done
     fi
 done
@@ -182,29 +206,60 @@ if [ -d "$AGENTS_DIR" ]; then
              target_dest="$TARGET_ROOT/.claudebot/$relative_path"
         fi
 
-        safe_symlink "$(readlink -f "$source_file")" "$target_dest"
+        safe_symlink "$(get_abs_path "$source_file")" "$target_dest"
     done
 fi
 
 # --- Cleanup Logic ---
-if [ "$CLEAN" = true ]; then
-    echo "Pruning broken symlinks in $TARGET_ROOT..."
-    # Simple cleanup for .gemini and .claudebot
-    for folder in .gemini .claudebot; do
-        if [ -d "$TARGET_ROOT/$folder" ]; then
-            find "$TARGET_ROOT/$folder" -xtype l | while read broken_link; do
-                local confirm=""
-                if [ "$AUTO_CONFIRM" = true ]; then
-                    confirm="y"
-                else
-                    read -p "Remove broken symlink $broken_link? [y/N] " confirm
-                fi
 
-                if [[ "$confirm" =~ ^[Yy]$ ]]; then
-                    rm "$broken_link"
-                    echo "Removed: $broken_link"
-                fi
-            done
+if [ "$CLEAN" = true ]; then
+
+    echo "Pruning broken symlinks in $TARGET_ROOT..."
+
+    # Simple cleanup for .gemini and .claudebot
+
+    for folder in .gemini .claudebot; do
+
+        if [ -d "$TARGET_ROOT/$folder" ]; then
+
+            # Portable way to find broken symlinks:
+
+            # find all links, then check if they exist. ! -e means broken.
+
+                        find "$TARGET_ROOT/$folder" -type l | while read broken_link; do
+
+                            if [ ! -e "$broken_link" ]; then
+
+                                confirm=""
+
+                                if [ "$AUTO_CONFIRM" = true ]; then
+
+                                    confirm="y"
+
+                                else
+
+                                    read -p "Remove broken symlink $broken_link? [y/N] " confirm
+
+                                fi
+
+            
+
+                                if [[ "$confirm" =~ ^[Yy]$ ]]; then
+
+                                    rm "$broken_link"
+
+                                    echo "Removed: $broken_link"
+
+                                fi
+
+                            fi
+
+                        done
+
+            
+
         fi
+
     done
+
 fi

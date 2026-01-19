@@ -1,0 +1,1 @@
+/Users/vittayapalotai.tanyawat/.awesome-agent/build/gemini/test_skill.md

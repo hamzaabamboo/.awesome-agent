@@ -5,6 +5,8 @@
 set -e
 
 SYNC_SCRIPT="./meta/sync.sh"
+mkdir -p tests/mock_home
+export TARGET_ROOT="$(pwd)/tests/mock_home"
 
 test_flag() {
     local flag=$1
