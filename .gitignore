@@ -12,5 +12,8 @@ build/
 conductor/setup_state.json
 .gemini/ralph-loop.local.md
 
+# Test artifacts
+tests/mock_home/
+
 # Logs
 *.log
