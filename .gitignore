@@ -1,0 +1,16 @@
+# OS files
+.DS_Store
+Thumbs.db
+
+# Build artifacts
+build/
+
+# External dependencies (if handled as clones)
+# external/superpowers/  # Uncomment if you want to manage this separately
+
+# Local state
+conductor/setup_state.json
+.gemini/ralph-loop.local.md
+
+# Logs
+*.log
