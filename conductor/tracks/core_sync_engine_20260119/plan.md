@@ -1,8 +1,8 @@
 # Implementation Plan - Build the Core Sync Engine
 
 ## Phase 1: Foundation & Structure
-- [ ] Task: Create project directory structure (`shared/skills`, `shared/prompts`, `shared/mcps`, `agents/gemini`, `agents/claude`, `meta`)
-- [ ] Task: Initialize `meta/sync.sh` with basic argument parsing (verbose, dry-run, clean)
+- [x] Task: Create project directory structure (`shared/skills`, `shared/prompts`, `shared/mcps`, `agents/gemini`, `agents/claude`, `meta`) 80d39e4
+- [x] Task: Initialize `meta/sync.sh` with basic argument parsing (verbose, dry-run, clean) 80d39e4
 - [ ] Task: Conductor - User Manual Verification 'Phase 1: Foundation & Structure' (Protocol in workflow.md)
 
 ## Phase 2: Compiler & Transformation
