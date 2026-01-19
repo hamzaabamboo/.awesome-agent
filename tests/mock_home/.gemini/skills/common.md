@@ -1,1 +1,0 @@
-/Users/vittayapalotai.tanyawat/.awesome-agent/agents/gemini/skills/common.md
