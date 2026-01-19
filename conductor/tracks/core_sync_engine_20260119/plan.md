@@ -12,9 +12,9 @@
 - [x] Task: Conductor - User Manual Verification 'Phase 2: Compiler & Transformation' (Protocol in workflow.md) 20bbb6e
 
 ## Phase 3: Sync Engine & Symlinking
-- [ ] Task: Implement directory inference logic (agents/ -> home)
-- [ ] Task: Implement safety check and backup logic (`.backup/` with timestamp)
-- [ ] Task: Implement symlinking logic for agent-specific and built shared files
+- [x] Task: Implement directory inference logic (agents/ -> home) 0366387
+- [x] Task: Implement safety check and backup logic (`.backup/` with timestamp) 0366387
+- [x] Task: Implement symlinking logic for agent-specific and built shared files 0366387
 - [ ] Task: Conductor - User Manual Verification 'Phase 3: Sync Engine & Symlinking' (Protocol in workflow.md)
 
 ## Phase 4: Cleanup & Polishing
