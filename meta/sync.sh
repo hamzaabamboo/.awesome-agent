@@ -79,5 +79,26 @@ if [ -d "$SHARED_SKILLS" ]; then
     done
 fi
 
-# TODO: Implement Claude transformation logic
+# Claude Transformation (XML wrapping)
+if [ -d "$SHARED_SKILLS" ]; then
+    if [ "$VERBOSE" = true ]; then
+        echo "Processing shared skills for Claude..."
+    fi
+    for file in "$SHARED_SKILLS"/*.md; do
+        if [ -f "$file" ]; then
+            filename=$(basename "$file")
+            name="${filename%.*}"
+            target="$BUILD_DIR/claude/${name}.xml"
+            
+            echo "<skill name=\"$name\">" > "$target"
+            cat "$file" >> "$target"
+            echo "</skill>" >> "$target"
+            
+            if [ "$VERBOSE" = true ]; then
+                echo "Compiled (XML Wrap): $filename -> $target"
+            fi
+        fi
+    done
+fi
+
 # TODO: Implement sync logic
