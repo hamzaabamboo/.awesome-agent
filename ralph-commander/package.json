@@ -1,0 +1,34 @@
+{
+  "name": "ralph-commander",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "bun run src/server/index.ts",
+    "build": "vite build",
+    "preview": "bun run src/server/index.ts",
+    "lint": "eslint src",
+    "test": "bun test"
+  },
+  "dependencies": {
+    "elysia": "latest",
+    "@elysiajs/cors": "latest",
+    "@elysiajs/static": "latest",
+    "vike": "latest",
+    "vike-react": "latest",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "js-yaml": "^4.1.0"
+  },
+  "devDependencies": {
+    "vite": "latest",
+    "@vitejs/plugin-react": "latest",
+    "bun-types": "latest",
+    "typescript": "^5.0.0",
+    "cross-env": "latest",
+    "@types/react": "^18.2.0",
+    "@types/react-dom": "^18.2.0",
+    "tailwindcss": "^3.4.0",
+    "autoprefixer": "^10.4.0",
+    "postcss": "^8.4.0"
+  }
+}

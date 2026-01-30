@@ -48,7 +48,51 @@ You are an expert software engineer and autonomous technical architect. The user
 - **BATCH VERIFICATION (EFFICIENCY):** Do not run tests/verification after every single file change. Implement the **full scope** of the current task first, then verify the *aggregate* result to minimize context switching.
 - **BROWSER TESTING:** Aggressively use MCP browser tools to render code, check console logs, and verify UI states.
 - Do not assume code works; prove it via execution.
+
+# PROJECT SPECIFIC RULES (NEW BUSINESS)
+- **LANGUAGE:** Respond in the same language as the user's input (入力言語と同じ言語で回答してください).
+- **PLANNING:** Always create a plan and get user approval before proceeding (最初にタスクを実行する計画を作成し、ユーザーの許可を得てから進行してください).
+- **GIT:** 
+  - Update `README.md` and `docs/` if necessary when committing.
+  - DO NOT include Claude Code signatures (🤖 Generated with Claude Code, Co-Authored-By) in commit messages.
+- **LINEAR:**
+  - Verify if the task exists in Linear; if not, ask the user to create it or offer to create it.
+  - Set status to "In Progress" when starting and "Done" when finished.
+  - Link the PR URL to the Linear task and add a `## Related` section in the PR description with the task link.
+- **TESTING:** Use mock data from `***-models` package for tests.# Workspace Context: .awesome-agent
+
+## Purpose
+This repository is a **Centralized AI Agent Configuration Manager**. It aims to provide a DRY (Don't Repeat Yourself), version-controlled, and automated environment for managing profiles, skills, and extensions across multiple AI agents (currently Gemini CLI and Claude Code).
+
+## Philosophy & Core Principles
+1.  **Single Source of Truth:** All configurations (Markdown profiles, skill instructions, agent-specific overrides) reside in this repository.
+2.  **Infrastructure as Code:** Agent environments are deployed and updated via the `sync.sh` engine. Manual changes to `~/.gemini` or `~/.claude` should be avoided; they should be mirrored back to `agents/` and deployed via the script.
+3.  **Cross-Agent Compatibility:** Shared assets (like `core_profile.md` and `shared/skills/`) are automatically transformed into the agent-specific formats and structures required (e.g., directory-based skills for both, Markdown everywhere).
+4.  **DRY (Don't Repeat Yourself):** Common skills and profile instructions are shared between agents via symlinking and build-time transformations.
+5.  **Strict Hygiene:** The sync engine must strictly ignore project internals (like `.git` and `.DS_Store`) to prevent polluting the agent's global configuration directories.
+
+## Project Structure
+-   `shared/`: Common assets. `core_profile.md` is the primary persona definition. `skills/` contains flat Markdown skills.
+-   `agents/`: Agent-specific overrides. Mapped to `$HOME/.[agent_name]/`.
+-   `external/`: Git submodules or cloned repos (e.g., `superpowers`).
+-   `build/`: Intermediate directory where skills are transformed into the required directory structure (`skills/<name>/SKILL.md`).
+-   `meta/sync.sh`: The core executable. Handles transformation and symlinking.
+-   `conductor/`: Tracks the progress of features and fixes via localized specifications and plans.
+
+## Workflow for AI Agents
+-   **Read Before Act:** Always verify the target agent's documentation (Gemini CLI vs Claude Code) before suggesting structural changes.
+-   **Engine First:** If a new type of configuration is needed, update the `sync.sh` engine to handle it automatically.
+-   **Verification:** Use the `tests/` suite to verify transformation logic before running a full sync.
+-   **Safe Deployment:** Use `./meta/sync.sh --verbose --yes` to deploy changes. Use `-d/--dry-run` when testing risky changes.
+
+## Global Guidelines
+-   **No XML for Skills:** Both Gemini and Claude use Markdown with YAML frontmatter for skills.
+-   **Directory-Based Skills:** Skills MUST be organized as `skills/<name>/SKILL.md`. The `sync.sh` handles this; source files in `shared/skills/` can remain flat.
+-   **Backup Policy:** The sync engine automatically backs up existing regular files to `~/.agent_config_backups/` before replacing them with symlinks.
+
 # SKILLS SYSTEM
+<!-- Skills section removed -->
+
 <skills_system priority="1">
 
 ## Available Skills
@@ -74,133 +118,139 @@ Usage notes:
 <skill>
 <name>agent-browser</name>
 <description>Automates browser interactions for web testing, form filling, screenshots, and data extraction. Use when the user needs to navigate websites, interact with web pages, fill forms, take screenshots, test web applications, or extract information from web pages.</description>
-<location>project</location>
+<location>/Users/vittayapalotai.tanyawat/.gemini/skills/agent-browser/SKILL.md</location>
 </skill>
 
 <skill>
 <name>ark-ui-react</name>
 <description>Component-specific guidelines and best practices for Ark UI with React.</description>
-<location>project</location>
+<location>/Users/vittayapalotai.tanyawat/.gemini/skills/ark-ui-react/SKILL.md</location>
 </skill>
 
 <skill>
 <name>common</name>
-<description></description>
-<location>project</location>
+<description>Common utilities and shared knowledge for all agents.</description>
+<location>/Users/vittayapalotai.tanyawat/.gemini/skills/common/SKILL.md</location>
 </skill>
 
 <skill>
-<name>elysia</name>
+<name>elysiajs</name>
 <description>Expert knowledge for building type-safe, high-performance backend servers with ElysiaJS.</description>
-<location>project</location>
+<location>/Users/vittayapalotai.tanyawat/.gemini/skills/elysiajs/SKILL.md</location>
 </skill>
 
 <skill>
 <name>panda-css</name>
 <description>Full documentation and best practices for Panda CSS.</description>
-<location>project</location>
-</skill>
-
-<skill>
-<name>react-best-practices</name>
-<description>React and Next.js performance optimization guidelines from Vercel Engineering. This skill should be used when writing, reviewing, or refactoring React/Next.js code to ensure optimal performance patterns. Triggers on tasks involving React components, Next.js pages, data fetching, bundle optimization, or performance improvements.</description>
-<location>project</location>
+<location>/Users/vittayapalotai.tanyawat/.gemini/skills/panda-css/SKILL.md</location>
 </skill>
 
 <skill>
 <name>superpowers-brainstorming</name>
 <description>"You MUST use this before any creative work - creating features, building components, adding functionality, or modifying behavior. Explores user intent, requirements and design before implementation."</description>
-<location>project</location>
+<location>/Users/vittayapalotai.tanyawat/.gemini/skills/superpowers-brainstorming/SKILL.md</location>
 </skill>
 
 <skill>
 <name>superpowers-dispatching-parallel-agents</name>
 <description>Use when facing 2+ independent tasks that can be worked on without shared state or sequential dependencies</description>
-<location>project</location>
+<location>/Users/vittayapalotai.tanyawat/.gemini/skills/superpowers-dispatching-parallel-agents/SKILL.md</location>
 </skill>
 
 <skill>
 <name>superpowers-executing-plans</name>
 <description>Use when you have a written implementation plan to execute in a separate session with review checkpoints</description>
-<location>project</location>
+<location>/Users/vittayapalotai.tanyawat/.gemini/skills/superpowers-executing-plans/SKILL.md</location>
 </skill>
 
 <skill>
 <name>superpowers-finishing-a-development-branch</name>
 <description>Use when implementation is complete, all tests pass, and you need to decide how to integrate the work - guides completion of development work by presenting structured options for merge, PR, or cleanup</description>
-<location>project</location>
+<location>/Users/vittayapalotai.tanyawat/.gemini/skills/superpowers-finishing-a-development-branch/SKILL.md</location>
 </skill>
 
 <skill>
 <name>superpowers-receiving-code-review</name>
 <description>Use when receiving code review feedback, before implementing suggestions, especially if feedback seems unclear or technically questionable - requires technical rigor and verification, not performative agreement or blind implementation</description>
-<location>project</location>
+<location>/Users/vittayapalotai.tanyawat/.gemini/skills/superpowers-receiving-code-review/SKILL.md</location>
 </skill>
 
 <skill>
 <name>superpowers-requesting-code-review</name>
 <description>Use when completing tasks, implementing major features, or before merging to verify work meets requirements</description>
-<location>project</location>
+<location>/Users/vittayapalotai.tanyawat/.gemini/skills/superpowers-requesting-code-review/SKILL.md</location>
 </skill>
 
 <skill>
 <name>superpowers-subagent-driven-development</name>
 <description>Use when executing implementation plans with independent tasks in the current session</description>
-<location>project</location>
+<location>/Users/vittayapalotai.tanyawat/.gemini/skills/superpowers-subagent-driven-development/SKILL.md</location>
 </skill>
 
 <skill>
 <name>superpowers-systematic-debugging</name>
 <description>Use when encountering any bug, test failure, or unexpected behavior, before proposing fixes</description>
-<location>project</location>
+<location>/Users/vittayapalotai.tanyawat/.gemini/skills/superpowers-systematic-debugging/SKILL.md</location>
 </skill>
 
 <skill>
 <name>superpowers-test-driven-development</name>
 <description>Use when implementing any feature or bugfix, before writing implementation code</description>
-<location>project</location>
+<location>/Users/vittayapalotai.tanyawat/.gemini/skills/superpowers-test-driven-development/SKILL.md</location>
 </skill>
 
 <skill>
 <name>superpowers-using-git-worktrees</name>
 <description>Use when starting feature work that needs isolation from current workspace or before executing implementation plans - creates isolated git worktrees with smart directory selection and safety verification</description>
-<location>project</location>
+<location>/Users/vittayapalotai.tanyawat/.gemini/skills/superpowers-using-git-worktrees/SKILL.md</location>
 </skill>
 
 <skill>
 <name>superpowers-using-superpowers</name>
 <description>Use when starting any conversation - establishes how to find and use skills, requiring Skill tool invocation before ANY response including clarifying questions</description>
-<location>project</location>
+<location>/Users/vittayapalotai.tanyawat/.gemini/skills/superpowers-using-superpowers/SKILL.md</location>
 </skill>
 
 <skill>
 <name>superpowers-verification-before-completion</name>
 <description>Use when about to claim work is complete, fixed, or passing, before committing or creating PRs - requires running verification commands and confirming output before making any success claims; evidence before assertions always</description>
-<location>project</location>
+<location>/Users/vittayapalotai.tanyawat/.gemini/skills/superpowers-verification-before-completion/SKILL.md</location>
 </skill>
 
 <skill>
 <name>superpowers-writing-plans</name>
 <description>Use when you have a spec or requirements for a multi-step task, before touching code</description>
-<location>project</location>
+<location>/Users/vittayapalotai.tanyawat/.gemini/skills/superpowers-writing-plans/SKILL.md</location>
 </skill>
 
 <skill>
 <name>superpowers-writing-skills</name>
 <description>Use when creating new skills, editing existing skills, or verifying skills work before deployment</description>
-<location>project</location>
+<location>/Users/vittayapalotai.tanyawat/.gemini/skills/superpowers-writing-skills/SKILL.md</location>
 </skill>
 
 <skill>
 <name>test_skill</name>
 <description></description>
-<location>project</location>
+<location>/Users/vittayapalotai.tanyawat/.gemini/skills/test_skill/SKILL.md</location>
+</skill>
+
+<skill>
+<name>vercel-react-best-practices</name>
+<description>React and Next.js performance optimization guidelines from Vercel Engineering. This skill should be used when writing, reviewing, or refactoring React/Next.js code to ensure optimal performance patterns. Triggers on tasks involving React components, Next.js pages, data fetching, bundle optimization, or performance improvements.</description>
+<location>/Users/vittayapalotai.tanyawat/.gemini/skills/vercel-react-best-practices/SKILL.md</location>
 </skill>
 
 <skill>
 <name>web-design-guidelines</name>
 <description>Review UI code for Web Interface Guidelines compliance. Use when asked to "review my UI", "check accessibility", "audit design", "review UX", or "check my site against best practices".</description>
-<location>project</location>
+<location>/Users/vittayapalotai.tanyawat/.gemini/skills/web-design-guidelines/SKILL.md</location>
+</skill>
+
+<skill>
+<name>common-gemini</name>
+<description></description>
+<location>/Users/vittayapalotai.tanyawat/.gemini/skills/common-gemini/SKILL.md</location>
 </skill>
 
 </available_skills>

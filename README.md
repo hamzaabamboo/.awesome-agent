@@ -2,69 +2,95 @@
 
 A centralized, DRY (Don't Repeat Yourself), and automated configuration manager for AI agents (Gemini CLI, Claude Code).
 
-## Features
+## Core Philosophy
 
-- **Automated Sync**: One script to rule them all (`meta/sync.sh`).
-- **DRY Profiles**: Share persona and guidelines across agents using a single source of truth.
-- **Smart Skill Transformation**: Automatically converts flat Markdown skills into the directory-based structure required by modern AI CLIs.
-- **Agent Overrides**: Easily manage agent-specific plugins, extensions, and settings.
-- **Safety First**: Automatic backups of existing configurations before symlinking.
+- **Single Source of Truth**: Define your persona and coding standards once in `shared/core_profile.md`.
+- **Layered Overrides**: Generic skills live in `shared/`, while agent-specific tweaks live in `agents/`.
+- **Standardized Skills**: Powered by the [OpenSkills](https://github.com/openskills/openskills) specification.
+- **Automated Sync**: One command to build and deploy your entire agent environment.
 
-## Project Structure
+---
 
-- `shared/`: Common assets (core profile, common skills).
-- `agents/`: Agent-specific configuration overrides (e.g., `agents/claude/plugins`).
-- `meta/`: Core logic and synchronization scripts.
-- `external/`: Integrated third-party components (e.g., `superpowers`).
-- `conductor/`: Feature specs and implementation plans.
+## Repository Structure
 
-## Usage
+### `shared/` - The Universal Core
+- **`shared/core_profile.md`**: Your global persona, coding standards, and operational protocols.
+- **`shared/skills/`**: Cross-agent skills. Supports both directory-based skills (with `rules/` subfolders) and flat `.md` files (automatically transformed during sync).
+- **`shared/AGENTS.md`**: The generated "Universal Prompt" that includes your profile and an indexed table of available skills.
 
-### Synchronize Configurations
+### `agents/` - Agent Overrides
+- **`agents/gemini/`**: Overrides for Gemini CLI.
+  - `extensions/`: Gemini-specific extensions.
+  - `skills/`: Gemini-only skills or overrides for shared skills.
+- **`agents/claude/`**: Overrides for Claude Code.
+  - `plugins/`: Claude-specific plugins.
+  - `commands/`: Custom Claude slash commands.
 
-To deploy your configurations to the home directory (`~/.gemini` and `~/.claude`):
+### `meta/` - Automation & Infrastructure
+- **`meta/sync.sh`**: The brain of the project. It builds the skill library, stitches modular rules, merges profiles, and symlinks everything to your home directory.
+- **`meta/add-skill.sh`**: Utility to vendor external skills from GitHub into the project.
+
+### `external/` - Third-party Dependencies
+- Contains vendored components like `superpowers` that are integrated into the system but maintained separately.
+
+---
+
+## Getting Started
+
+### 1. Prerequisites
+- Node.js (for `npx openskills`)
+- `rsync` and `sed` (standard on macOS/Linux)
+
+### 2. Synchronize
+To deploy your configuration to `~/.gemini`, `~/.claude`, and `~/.agent`:
 
 ```bash
 ./meta/sync.sh --verbose --yes
 ```
 
-**Options:**
-- `-v, --verbose`: Show detailed symlink and build info.
-- `-d, --dry-run`: Preview changes without applying them.
-- `-c, --clean`: Interactively remove broken symlinks.
-- `-y, --yes`: Auto-confirm prompts.
+**Flags:**
+- `-v, --verbose`: Show detailed build and sync logs.
+- `-y, --yes`: Auto-confirm the OpenSkills index update.
+- `-c, --clean`: (Optional) Remove broken symlinks in home directories.
 
-## Development
+---
 
-### Adding a Skill
-Place your skill directory in `.agent/skills/<name>/`. Each skill must contain a `SKILL.md` file.
+## The Skill System
 
-If your skill has multiple rules, you can place them in a `rules/` subfolder. The sync script will automatically stitch them into the main `SKILL.md` during synchronization.
+The project uses a hybrid skill system that adapts to your needs.
 
-### Adding External Skills
-You can add skills from external repositories using the `meta/add-skill.sh` script:
+### 1. Directory Skills
+Create a folder in `shared/skills/<name>/`.
+- Must contain a `SKILL.md`.
+- Can contain a `rules/` folder. All `.md` files in `rules/` will be appended to `SKILL.md` automatically during sync.
 
-```bash
-./meta/add-skill.sh elysiajs/skills elysia
-```
+### 2. Flat Skills
+Simply drop a `<name>.md` file into `shared/skills/`. The sync script will transform it into a compliant `shared/skills/<name>/SKILL.md` structure in your home directory.
 
-This will vendor the skill into `external/elysia` and automatically symlink it into `.agent/skills/elysia-skills`.
+### 3. Vendored Skills
+Skills from external sources (like Superpowers) are prefixed with their source name (e.g., `superpowers-brainstorming`) to avoid collisions.
 
-### Modifying Persona
-Update `shared/core_profile.md`. Changes will be synced to both agents on the next run.
+---
 
-## Inspiration & Target Use Cases
+## Deployment Mechanics
 
-We aim for "one-shot" efficiency like the Elysiajs skills ecosystem:
+When you run `./meta/sync.sh`, the following happens:
 
-```bash
-$ bun create elysia app && cd app
-$ bunx skills add elysiajs/skills
-$ /claude
-$ /init
-> Create Elysia book renting service CRUD in-memory
-> Add OpenAPI documentation to Elysia
-```
+1. **Build Phase**:
+   - Shared skills are collected.
+   - Modular rules are stitched.
+   - Flat files are converted to directory-based skills.
+   - Agent-specific skills are layered on top (overwriting shared ones with the same name).
+2. **Profile Merge**:
+   - `shared/core_profile.md` is prepended to `shared/AGENTS.md`.
+   - `npx openskills sync` updates the "Available Skills" index in `AGENTS.md`.
+3. **Link Phase**:
+   - All processed skills are rsync'd to `~/.agent/skills/`.
+   - `~/.gemini/GEMINI.md` and `~/.claude/CLAUDE.md` are symlinked to `shared/AGENTS.md`.
+   - Legacy symlinks are created in `~/.gemini/skills/` and `~/.claude/skills/` for backward compatibility.
 
-*One shot, works perfectly.*
+---
 
+## Customizing your Persona
+
+Edit **`shared/core_profile.md`**. This file is the "brain" of your agent. It defines how the agent thinks, communicates, and codes. Because it's merged into `AGENTS.md`, both Gemini and Claude will inherit these traits instantly after a sync.

@@ -114,9 +114,8 @@ fi
 
 log "Syncing index into AGENTS.md..."
 # We point openskills to our build dir for indexing
-# BUT openskills sync usually looks at the current project's .agent/skills
-# Let's temporarily symlink .agent/skills to BUILD_DIR for the sync
 mkdir -p .agent
+rm -rf .agent/skills
 ln -sf "$(pwd)/$BUILD_DIR" .agent/skills
 OPENSKILLS_ARGS="-o $AGENTS_MD"
 if [ "$YES" = true ]; then
@@ -125,6 +124,33 @@ fi
 npx openskills sync $OPENSKILLS_ARGS
 rm .agent/skills
 rmdir .agent 2>/dev/null || true
+
+# Post-process AGENTS.md to ensure absolute paths for Gemini CLI native integration
+log "Rewriting skill locations in $AGENTS_MD for native integration..."
+# Use a temporary file for the rewrite
+TMP_AGENTS_MD=$(mktemp)
+sed "s|<location>project</location>|<location>$TARGET_ROOT/.gemini/skills/SKILL_NAME_HINT/SKILL.md</location>|g" "$AGENTS_MD" > "$TMP_AGENTS_MD"
+# This is a bit tricky with sed. Let's use a small perl/python script or a loop.
+# We want to replace each <location>...</location> with the correct path based on the preceding <name>... </name>
+
+python3 -c "
+import sys, re, os
+path = sys.argv[1]
+target_root = sys.argv[2]
+with open(path, 'r') as f:
+    content = f.read()
+
+def replace_location(match):
+    skill_name = match.group(1)
+    return f'<name>{skill_name}</name>\n<description>{match.group(2)}</description>\n<location>{target_root}/.gemini/skills/{skill_name}/SKILL.md</location>'
+
+# Match <name>...</name>, <description>...</description>, <location>...</location>
+pattern = re.compile(r'<name>([^<]+)</name>\s*<description>([^<]*)</description>\s*<location>[^<]+</location>', re.DOTALL)
+new_content = pattern.sub(replace_location, content)
+
+with open(path, 'w') as f:
+    f.write(new_content)
+" "$AGENTS_MD" "$TARGET_ROOT"
 
 # 6. Deploy to Home
 echo "Deploying to $TARGET_ROOT/.agent/skills/..."
@@ -159,16 +185,30 @@ for agent in gemini claude; do
         fi
     fi
     
-    # 7.4 Maintain Legacy Symlinks
-    log "  Maintaining legacy symlinks for $agent..."
+    # 7.4 Maintain Legacy Symlinks & Antigravity Support
+    log "  Maintaining legacy symlinks & Antigravity support for $agent..."
     mkdir -p "$TARGET_ROOT/.$agent/skills"
+
+    # Antigravity support for Gemini
+    if [ "$agent" == "gemini" ]; then
+        log "  Setting up Antigravity skills for Gemini..."
+        mkdir -p "$TARGET_ROOT/.$agent/antigravity"
+        rm -rf "$TARGET_ROOT/.$agent/antigravity/skills"
+        ln -sf "$TARGET_ROOT/.agent/skills" "$TARGET_ROOT/.$agent/antigravity/skills"
+    fi
+    
     find "$TARGET_ROOT/.agent/skills" -maxdepth 1 -mindepth 1 -type d | while read skill_path; do
         skill_name=$(basename "$skill_path")
+        
+        # Clean up existing to avoid nesting
+        rm -rf "$TARGET_ROOT/.$agent/skills/$skill_name"
         ln -sf "$skill_path" "$TARGET_ROOT/.$agent/skills/$skill_name"
         
         if [ "$agent" == "gemini" ]; then
+            rm -f "$TARGET_ROOT/.$agent/$skill_name.md"
             ln -sf "$skill_path/SKILL.md" "$TARGET_ROOT/.$agent/$skill_name.md"
         else
+            rm -f "$TARGET_ROOT/.$agent/$skill_name.xml"
             ln -sf "$skill_path/SKILL.md" "$TARGET_ROOT/.$agent/$skill_name.xml"
         fi
     done

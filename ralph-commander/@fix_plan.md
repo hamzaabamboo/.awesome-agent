@@ -1,0 +1,26 @@
+# Ralph Commander Implementation Plan
+
+- [x] **Phase 1: Foundation**
+    - [x] Setup Elysia backend with CORS and Static plugin
+    - [x] Setup React + Vite frontend with Tailwind
+    - [x] Verify "Hello World" from Backend to Frontend
+- [x] **Phase 2: Data Link**
+    - [x] Create a service to read `.gemini/ralph-loop.local.md`
+    - [x] Expose an API endpoint `GET /api/ralph/status`
+    - [x] Parse the YAML frontmatter from the markdown file
+- [x] **Phase 3: Visualization**
+    - [x] Design a dashboard card for "Current Status"
+    - [x] Show "Last Updated" timestamp
+    - [x] Show "Completion Promise"
+- [x] **Phase 4: Control**
+    - [x] Implement `POST /api/ralph/stop` to run the cancel script
+    - [x] Add a big red "STOP" button in the UI
+    - [x] **Phase 5: Orchestration (New)**
+        - [x] Create `scripts/run-loop.sh` runner script
+        - [x] Implement `POST /api/ralph/start` endpoint
+        - [x] Add "Start New Loop" form to UI
+- [ ] **Phase 6: Polish & Improvements**
+    - [x] Add terminal auto-scroll to bottom when logs update
+    - [x] Add Clear Logs button to terminal header
+    - [ ] Implement better error handling for backend services
+    - [ ] Polish the dashboard UI

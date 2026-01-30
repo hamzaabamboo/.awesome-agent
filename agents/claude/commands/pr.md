@@ -1,6 +1,11 @@
 
 PRのタイトルと説明を整理して更新してください。
 
+## 引数
+
+- `$ARGUMENTS`: オプション引数
+  - `draft`: ドラフトPRとして作成
+
 ## 手順
 
 ### 0. ブランチの確認
@@ -65,7 +70,8 @@ PRのタイトルと説明を整理して更新してください。
 - `gh api repos/{owner}/{repo}/pulls/<number> -X PATCH -f title="<タイトル>" -f body="<説明>"` で更新
 
 新規PRを作成する場合:
-- `gh pr create --base <選択されたベースブランチ> --title "<タイトル>" --body "<説明>"` で作成
+- `$ARGUMENTS` に `draft` が含まれる場合: `gh pr create --base <選択されたベースブランチ> --title "<タイトル>" --body "<説明>" --draft` で作成
+- それ以外: `gh pr create --base <選択されたベースブランチ> --title "<タイトル>" --body "<説明>"` で作成
 - ステップ2で選択されたベースブランチを使用
 
 ## 注意事項
