@@ -2,7 +2,7 @@
 
 - [ ] **Phase 1: Real-time Infrastructure (WebSockets)**
     - [x] Implement Elysia WebSocket handler for real-time state and log updates
-    - [ ] Create `useRalphWS` hook for frontend connection management
+    - [x] Create `useRalphWS` hook for frontend connection management
     - [ ] Implement `fs.watch` backend logic to monitor `.gemini/ralph-loop.local.md` and `ralph-runner.log`
     - [ ] Implement line-by-line log streaming (pushing diffs over WS)
     - [ ] Add visual connection status indicator (Socket Connected/Disconnected)
