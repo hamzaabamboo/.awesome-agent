@@ -94,3 +94,20 @@ When you run `./meta/sync.sh`, the following happens:
 ## Customizing your Persona
 
 Edit **`shared/core_profile.md`**. This file is the "brain" of your agent. It defines how the agent thinks, communicates, and codes. Because it's merged into `AGENTS.md`, both Gemini and Claude will inherit these traits instantly after a sync.
+
+---
+
+## Ralph Commander
+
+A built-in Web UI to visualize, orchestrate, and control autonomous AI agent loops (Ralph Wiggum methodology).
+
+### Features
+- **Planning First**: Automatically elaborates prompts into technical specs and implementation plans.
+- **Dual Engine**: Support for both Gemini CLI and Claude Code.
+- **Real-time Telemetry**: Live log streaming and token/tool usage statistics.
+- **Visual Control**: Stop, clear logs, and track task progress via a modern dashboard.
+
+### Accessing the Dashboard
+1. Enter the commander directory: `cd ralph-commander`
+2. Start the server: `bun run dev`
+3. Visit **http://localhost:3000** in your browser.

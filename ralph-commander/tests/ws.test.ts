@@ -1,4 +1,5 @@
-import { describe, it, expect } from "bun:test";
+import { describe, it, expect, mock } from "bun:test";
+mock.module("vike/server", () => ({ renderPage: mock(async () => ({ httpResponse: null })), createDevMiddleware: mock(async () => ({ devMiddleware: () => {} })) }));
 import { app } from "../src/server/index";
 
 describe("WebSocket", () => {

@@ -1,54 +1,52 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useEffect, useState } from 'react';
+import { useRalphStore } from '../store/useRalphStore';
 
 export function useRalphWS() {
-  const [connected, setConnected] = useState(false);
-  const [lastMessage, setLastMessage] = useState<any>(null);
-  const socketRef = useRef<WebSocket | null>(null);
-
-  const connect = useCallback(() => {
-    if (socketRef.current?.readyState === WebSocket.OPEN) return;
-
-    // In SSR, window is not defined
-    if (typeof window === 'undefined') return;
-
-    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const host = window.location.host;
-    const socket = new WebSocket(`${protocol}//${host}/ws`);
-
-    socket.onopen = () => {
-      setConnected(true);
-    };
-
-    socket.onmessage = (event) => {
-      try {
-        const data = JSON.parse(event.data);
-        setLastMessage(data);
-      } catch (e) {
-        setLastMessage(event.data);
-      }
-    };
-
-    socket.onclose = () => {
-      setConnected(false);
-      // Reconnect after 3 seconds
-      setTimeout(connect, 3000);
-    };
-
-    socketRef.current = socket;
-  }, []);
+  const [connected, setWsConnected] = useState(false);
+  const { setStatus, appendLogs, setLogs, setTasks } = useRalphStore();
 
   useEffect(() => {
+    let socket: WebSocket;
+    let reconnectTimer: any;
+
+    const connect = () => {
+      const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+      const host = window.location.host;
+      socket = new WebSocket(`${protocol}//${host}/ws`);
+
+      socket.onopen = () => {
+        setWsConnected(true);
+        console.log('📡 Ralph WS: Connected');
+      };
+
+      socket.onmessage = (event) => {
+        try {
+          const msg = JSON.parse(event.data);
+          if (msg.type === 'status') {
+            setStatus(msg.data);
+          } else if (msg.type === 'logs') {
+            appendLogs(msg.data);
+          } else if (msg.type === 'tasks') {
+            setTasks(msg.data);
+          }
+        } catch (e) {
+          console.error('📡 Ralph WS: Error parsing message', e);
+        }
+      };
+
+      socket.onclose = () => {
+        setWsConnected(false);
+        console.warn('📡 Ralph WS: Disconnected, retrying...');
+        reconnectTimer = setTimeout(connect, 3000);
+      };
+    };
+
     connect();
     return () => {
-      socketRef.current?.close();
+      socket?.close();
+      clearTimeout(reconnectTimer);
     };
-  }, [connect]);
-
-  const sendMessage = useCallback((msg: any) => {
-    if (socketRef.current?.readyState === WebSocket.OPEN) {
-      socketRef.current.send(typeof msg === 'string' ? msg : JSON.stringify(msg));
-    }
   }, []);
 
-  return { connected, lastMessage, sendMessage };
+  return { connected };
 }

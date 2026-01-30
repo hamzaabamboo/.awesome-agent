@@ -1,4 +1,12 @@
-import { describe, it, expect } from "bun:test";
+import { describe, it, expect, mock } from "bun:test";
+
+// Mock vike/server to avoid SSR-related errors in test environment
+mock.module("vike/server", () => ({
+  renderPage: mock(async () => ({ httpResponse: null })),
+  createDevMiddleware: mock(async () => ({ devMiddleware: () => {} }))
+}));
+
+mock.module("vike/server", () => ({ renderPage: mock(async () => ({ httpResponse: null })), createDevMiddleware: mock(async () => ({ devMiddleware: () => {} })) }));
 import { app } from "../src/server/index";
 
 describe("Ralph Commander API", () => {
@@ -17,6 +25,14 @@ describe("Ralph Commander API", () => {
     expect(response.status).toBe(200);
     expect(json).toHaveProperty("active");
     expect(json).toHaveProperty("iteration");
+  });
+
+  it("GET /api/ralph/tasks should return array", async () => {
+    const response = await app.handle(new Request("http://localhost/api/ralph/tasks"));
+    const json = await response.json();
+    
+    expect(response.status).toBe(200);
+    expect(Array.isArray(json)).toBe(true);
   });
   
   it("POST /api/ralph/start should fail without prompt", async () => {

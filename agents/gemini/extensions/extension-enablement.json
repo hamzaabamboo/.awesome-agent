@@ -8,5 +8,10 @@
     "overrides": [
       "/Users/vittayapalotai.tanyawat/*"
     ]
+  },
+  "init-repo": {
+    "overrides": [
+      "/Users/vittayapalotai.tanyawat/*"
+    ]
   }
 }

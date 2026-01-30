@@ -6,17 +6,31 @@ GlobalRegistrator.register();
 
 import React from "react";
 import { render } from "@testing-library/react";
-import App from "../src/client/App";
+import Page from "../src/pages/index/+Page";
 
-describe("App Component", () => {
+describe("Index Page Component", () => {
   // Mock fetch
   const mockFetch = mock((url) => {
       if (url.toString().includes("/logs")) {
         return Promise.resolve({
+            ok: true,
             text: () => Promise.resolve("Mock Logs\nLine 2")
         });
       }
+      if (url.toString().includes("/tasks")) {
+        return Promise.resolve({
+            ok: true,
+            json: () => Promise.resolve([])
+        });
+      }
+      if (url.toString().includes("/files")) {
+        return Promise.resolve({
+            ok: true,
+            json: () => Promise.resolve([])
+        });
+      }
       return Promise.resolve({
+          ok: true,
           json: () => Promise.resolve({
               active: true,
               iteration: 1,
@@ -31,13 +45,10 @@ describe("App Component", () => {
   global.fetch = mockFetch as any;
 
   it("renders the header", async () => {
-    // Debug
-    // console.log("Document defined?", typeof document !== 'undefined');
+    const { findByText } = render(<Page />);
     
-    const { findByText } = render(<App />);
-    
-    // We expect the "Loading" state initially because useEffect is async
-    const loadingElement = await findByText(/Loading Ralph Status/i);
-    expect(loadingElement).toBeTruthy();
+    // Check for "Ralph Commander" header
+    const headerElement = await findByText(/Ralph Commander/i);
+    expect(headerElement).toBeTruthy();
   });
 });

@@ -84,6 +84,77 @@ if [ -d "$SHARED_SKILLS" ]; then
     process_skill_dir "$SHARED_SKILLS" "$BUILD_DIR"
 fi
 
+# 4b. Process Shared Commands (New)
+# Transforms Markdown commands from shared/commands/ to:
+# - ~/.claude/commands/*.md (Symlink)
+# - ~/.gemini/extensions/init-repo/commands/*.toml (Generated)
+
+COMMANDS_DIR="./shared/commands"
+
+process_commands() {
+    local src_dir=$1
+    if [ ! -d "$src_dir" ]; then return; fi
+    
+    log "Processing shared commands from $src_dir..."
+    
+    find "$src_dir" -name "*.md" | while read cmd_path; do
+        local cmd_filename=$(basename "$cmd_path")
+        local cmd_name="${cmd_filename%.md}"
+        
+        # 1. Deploy to Claude (Symlink)
+        mkdir -p "$TARGET_ROOT/.claude/commands"
+        log "  Linking $cmd_name for Claude..."
+        rm -f "$TARGET_ROOT/.claude/commands/$cmd_filename"
+        ln -sf "$(pwd)/$cmd_path" "$TARGET_ROOT/.claude/commands/$cmd_filename"
+        
+        # 2. Deploy to Gemini (Generate TOML)
+        # Note: We assume these go into 'init-repo' extension for now, as that's the primary use case.
+        # Ideally, we'd have a mapping or a 'core-commands' extension.
+        local gemini_ext_dir="$TARGET_ROOT/.gemini/extensions/init-repo/commands"
+        mkdir -p "$gemini_ext_dir"
+        
+        log "  Generating $cmd_name.toml for Gemini..."
+        local toml_file="$gemini_ext_dir/$cmd_name.toml"
+        
+        # Use python for robust frontmatter stripping and TOML generation
+        python3 -c "
+import sys
+import json
+import re
+
+file_path = sys.argv[1]
+
+with open(file_path, 'r') as f:
+    raw_content = f.read()
+
+# Extract description from frontmatter if possible, or use filename
+description = \"Agent command\"
+match = re.search(r'^description:\s*(.*)$', raw_content, re.MULTILINE)
+if match:
+    description = match.group(1).strip()
+
+# Strip YAML frontmatter if present
+content = raw_content
+if raw_content.startswith('---'):
+    try:
+        parts = raw_content.split('---', 2)
+        if len(parts) >= 3:
+            content = parts[2].strip()
+    except ValueError:
+        pass
+
+# Create TOML content
+print(f'description = {json.dumps(description)}')
+print('prompt = \"\"\"')
+print(content)
+print('\"\"\"')
+" "$cmd_path" > "$toml_file"
+
+    done
+}
+
+process_commands "$COMMANDS_DIR"
+
 # 5. Use openskills to sync the index into AGENTS.md
 # We do this BEFORE agent-specific overrides so the index reflects the "Universal" set
 # or we could do it after, but shared is usually the source of truth for the index.

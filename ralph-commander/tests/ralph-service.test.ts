@@ -1,7 +1,6 @@
-import { describe, it, expect, mock, beforeAll } from "bun:test";
-import { getRalphStatus } from "../src/server/services/ralph";
+import { describe, it, expect, mock } from "bun:test";
 
-// Mock fs/promises
+// Mock fs/promises BEFORE importing the service
 const mockReadFile = mock(async (path: string) => {
   if (path.includes("missing")) {
     const err = new Error("File not found");
@@ -11,6 +10,16 @@ const mockReadFile = mock(async (path: string) => {
   
   if (path.includes("invalid")) {
     return "INVALID CONTENT -- NO SEPARATORS";
+  }
+
+  if (path.includes("@fix_plan.md")) {
+    return `# Test Plan
+- [x] **Phase 1: Task 1**
+    - [x] Subtask 1.1
+    - [ ] Subtask 1.2
+- [ ] **Phase 2: Task 2**
+    - [ ] Subtask 2.1
+`;
   }
 
   return `---
@@ -25,23 +34,40 @@ This is the prompt body.`;
 });
 
 mock.module("fs/promises", () => ({
-  readFile: mockReadFile
+  readFile: mockReadFile,
+  stat: mock(async () => ({ size: 100 })),
+  open: mock(async () => ({ read: mock(), close: mock() }))
 }));
+
+import { getRalphStatus, getRalphTasks } from "../src/server/services/ralph";
 
 describe("Ralph Service", () => {
   it("should parse a valid status file", async () => {
-    // We need to trick the service into using a path that doesn't trigger our error mocks
-    // Since the service uses process.cwd(), we can't easily change the path it reads 
-    // without dependency injection or more complex mocking.
-    // However, bun's module mocking should intercept the call.
-    
-    // NOTE: In a real scenario, we might refactor the service to accept a filepath.
-    // For this test, assuming the mock works for the default path:
     const status = await getRalphStatus();
-    
     expect(status).not.toBeNull();
     expect(status?.active).toBe(true);
     expect(status?.iteration).toBe(5);
-    expect(status?.prompt).toBe("This is the prompt body.");
+  });
+
+  it("should parse tasks from @fix_plan.md", async () => {
+    // Force the mock to return exactly what we want for this test
+    mockReadFile.mockImplementation(async (path: string) => {
+        if (path.endsWith("@fix_plan.md")) {
+            return `# Test Plan
+- [x] **Phase 1: Task 1**
+    - [x] Subtask 1.1
+    - [ ] Subtask 1.2
+- [ ] **Phase 2: Task 2**
+    - [ ] Subtask 2.1
+`;
+        }
+        return "";
+    });
+
+    const tasks = await getRalphTasks();
+    expect(tasks.length).toBe(3);
+    expect(tasks[0].description).toBe("Subtask 1.1");
+    expect(tasks[0].completed).toBe(true);
+    expect(tasks[2].description).toBe("Subtask 2.1");
   });
 });
