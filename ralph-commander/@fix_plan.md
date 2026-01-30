@@ -22,5 +22,5 @@
 - [ ] **Phase 6: Polish & Improvements**
     - [x] Add terminal auto-scroll to bottom when logs update
     - [x] Add Clear Logs button to terminal header
-    - [ ] Implement better error handling for backend services
+    - [x] Implement better error handling for backend services
     - [ ] Polish the dashboard UI

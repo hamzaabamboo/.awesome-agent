@@ -15,17 +15,31 @@ export interface RalphStatus {
   prompt?: string;
 }
 
-export async function getRalphStatus(): Promise<RalphStatus | null> {
+export class RalphServiceError extends Error {
+  constructor(message: string, public code?: string) {
+    super(message);
+    this.name = "RalphServiceError";
+  }
+}
+
+export async function getRalphStatus(): Promise<RalphStatus> {
   try {
     const content = await readFile(STATUS_FILE_PATH, "utf-8");
     const parts = content.split("---");
     
-    if (parts.length < 3) return null;
+    if (parts.length < 3) {
+      throw new RalphServiceError("Invalid status file format: missing frontmatter separators");
+    }
 
     const frontmatter = parts[1];
     const body = parts.slice(2).join("---").trim();
     
-    const state = yaml.load(frontmatter) as any;
+    let state: any;
+    try {
+      state = yaml.load(frontmatter) as any;
+    } catch (e) {
+      throw new RalphServiceError("Invalid YAML frontmatter in status file");
+    }
     
     return {
       active: state.active || false,
@@ -39,6 +53,9 @@ export async function getRalphStatus(): Promise<RalphStatus | null> {
     if ((error as any).code === 'ENOENT') {
       return { active: false, iteration: 0, max_iterations: 0, completion_promise: "", started_at: "", prompt: "" };
     }
-    return null;
+    if (error instanceof RalphServiceError) {
+      throw error;
+    }
+    throw new RalphServiceError(`Failed to read status: ${(error as Error).message}`, (error as any).code);
   }
 }
