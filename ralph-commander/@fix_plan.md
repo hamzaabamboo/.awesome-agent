@@ -29,7 +29,7 @@
 - [ ] **Phase 7: Advanced Orchestration (Elaboration)**
     - [x] Implement task list parsing in `src/server/services/ralph.ts`
     - [x] Expose `GET /api/ralph/tasks` to fetch tasks from `@fix_plan.md`
-    - [ ] Automatically update `@fix_plan.md` with a plan if the prompt is "new"
+    - [x] Automatically update `@fix_plan.md` with a plan if the prompt is "new"
 - [ ] **Phase 8: UI/UX Overhaul**
     - [ ] Design and implement a "Task List" sidebar or section in the UI
     - [ ] Improve the general aesthetic (gradients, better shadows, better typography)
