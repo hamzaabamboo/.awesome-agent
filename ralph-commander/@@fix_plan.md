@@ -1,6 +1,6 @@
 # Ralph Commander: Implementation & Compliance Checklist
 
-- [ ] **Phase 1: Compliance with Specifications**
+- [x] **Phase 1: Compliance with Specifications**
     - [x] Backend: WebSocket synchronization for status, tasks, and logs
     - [x] Backend: `is_zombie` detection for active loops with dead PIDs
     - [x] Backend: Git inventory (`/api/ralph/files`) for changed files
@@ -10,7 +10,7 @@
     - [x] UI: Show "Completion Promise" on dashboard for active loops
     - [x] UI: Show "Agent" and "Model" as distinct, permanent labels in Header or Stats
 
-- [ ] **Phase 2: Task Blueprint Enhancements**
+- [x] **Phase 2: Task Blueprint Enhancements**
     - [x] UI/API: Enable manual task status overrides (click task to toggle `[x]`)
     - [x] UI: Implement "Focus Mode" (visually highlight the first incomplete task)
     - [x] UI: Overall blueprint completion progress bar (e.g., "12/15 Tasks Done")
