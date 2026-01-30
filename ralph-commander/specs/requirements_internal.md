@@ -1,91 +1,98 @@
-# Ralph Commander - Internal Specifications
+# Ralph Commander - Internal Technical Specification
 
 ## 1. Overview
-Ralph Commander is a specialized management interface for autonomous coding agent loops (specifically for Ralph/Gemini CLI). It provides real-time visibility and control over long-running iterative tasks.
+Ralph Commander is a real-time monitoring and control dashboard for autonomous AI agent loops (Ralph). It provides visibility into the agent's internal state, execution progress, and resource consumption.
 
-## 2. State & Persistence
+## 2. Technical Stack
+- **Runtime**: Bun (v1.x)
+- **Backend Framework**: ElysiaJS
+- **Frontend Framework**: React 18+ with Vite
+- **Styling**: Tailwind CSS + Framer Motion (animations) + Lucide React (icons)
+- **State Management**: Zustand
+- **SSR/Routing**: Vike (formerly vite-plugin-ssr)
+- **Communication**: WebSockets (WS) for real-time updates + REST API
 
-### 2.1 Agent State File (`.gemini/ralph-loop.local.md`)
-The source of truth for the loop's execution state.
-- **Format**: Markdown with YAML frontmatter.
-- **Frontmatter Schema**:
-  ```yaml
-  active: boolean      # Is the loop currently running?
-  iteration: number   # Current turn count
-  max_iterations: number
-  completion_promise: string # Success trigger phrase
-  started_at: string   # ISO timestamp
-  queries: number      # Total LLM queries made
-  phase: string        # Current logical phase (e.g. "THINKING", "ACTING")
-  agent: string        # "gemini" | "claude"
-  model: string        # Model identifier or "auto"
-  ```
-- **Body**: Contains the raw initial prompt.
+## 3. System Architecture
 
-### 2.2 Execution Metadata
-- **PID File (`.gemini/runner.pid`)**: Stores the process ID of the `run-loop.sh` process group. Used for reliable termination.
-- **Stats Store (`.gemini/stats.json`)**: Persistent telemetry.
-  - `iteration_times`: List of `{ iteration: number, duration_ms: number, queries: number }`.
-  - `start_times`: Map of `iteration -> ISO timestamp`.
-  - `queries_at_last_iteration`: Offset for calculating incremental queries.
+### 3.1 Backend (ElysiaJS)
+The backend acts as a bridge between the physical state files and the web frontend.
 
-### 2.3 Task Plan (`@fix_plan.md`)
-- Parsed by the backend to generate the "Active Blueprint".
-- **Pattern**:
-  - Phases: `**Phase \d+: (.*?)**`
-  - Tasks: `- [ ] description` or `- [x] description`
+#### API Endpoints
+- `GET /api/ralph/status`: Reads and parses `.gemini/ralph-loop.local.md` (YAML).
+- `GET /api/ralph/tasks`: Parses `@fix_plan.md` to extract task lists and phases.
+- `POST /api/ralph/tasks/toggle`: Updates task completion status in `@fix_plan.md`.
+- `GET /api/ralph/logs`: Reads `ralph-runner.log`.
+- `DELETE /api/ralph/logs`: Clears the log file.
+- `GET /api/ralph/files`: Returns git status of the project.
+- `POST /api/ralph/start`: Executes `scripts/run-loop.sh` to launch the agent.
+- `POST /api/ralph/stop`: Kills the agent process (using `.gemini/runner.pid`) and updates the state file.
+- `GET /agent/models`: Discovers available Gemini models via CLI.
 
-## 3. Backend Services (ElysiaJS)
+#### WebSocket (`/ws`)
+- **Pub/Sub**: Clients subscribe to `ralph-updates`.
+- **File Watching**: Uses `fs.watch` on `.gemini/`, `@fix_plan.md`, and `ralph-runner.log` to push changes immediately to connected clients.
 
-### 3.1 API Endpoints (`/api`)
-- **GET `/ralph/status`**: Returns the combined state from the state file and stats store.
-  - Includes `is_zombie` flag (true if `active: true` but PID is dead).
-- **GET `/ralph/tasks`**: Returns parsed tasks from `@fix_plan.md`.
-- **GET `/ralph/logs`**: Returns the full content of `ralph-runner.log`.
-- **DELETE `/ralph/logs`**: Wipes the log file.
-- **GET `/ralph/files`**: Returns changed files via `git status --porcelain`.
-- **GET `/agent/models`**: Returns available models for the selected agent.
-- **POST `/ralph/start`**: Spawns `scripts/run-loop.sh`.
-  - Payload: `{ prompt, max_iterations, completion_promise, agent, model, resume }`.
-- **POST `/ralph/stop`**: 
-  - Sets `active: false` in the state file.
-  - Kills the process group via PID using `process.kill(-pid, 'SIGTERM')`.
+### 3.2 Frontend (React)
+A "Fail Fast" oriented UI designed for high-density information display.
 
-### 3.2 Real-time Sync (WebSockets)
-- **Endpoint**: `/ws`
-- **Topic**: `ralph-updates`
-- **Messages**:
-  - `{ type: "status", data: RalphStatus }`
-  - `{ type: "tasks", data: RalphTask[] }`
-  - `{ type: "logs", data: string }` (Incremental text chunks)
-
-### 3.3 Watcher Logic
-- **FS Watchers**:
-  - Watch `.gemini/` for `ralph-loop.local.md` changes.
-  - Watch root for `@fix_plan.md` changes.
-  - Watch root for `ralph-runner.log` growth (using byte offset to stream only new data).
-
-## 4. Frontend Architecture (React + Vike)
-
-### 4.1 Global Store (`useRalphStore`)
-- Uses `zustand` for state management.
-- Handles `logs` as an array of strings or a single large buffer with efficient updates.
-
-### 4.2 UI Components
+#### Components
+- **Dashboard**: Main layout with real-time status indicators.
+- **Mission Control**: Form to configure and launch missions (prompt, iterations, promise, model, resume).
 - **StatsGrid**: 
-  - **Velocity**: Average iteration duration.
-  - **Efficiency**: Queries per iteration.
-  - **Duration**: Total time since `started_at`.
-- **ControlPanel**:
-  - Validates inputs before starting.
-  - Provides "Resume" toggle to skip prompt requirement if `@fix_plan.md` exists.
-- **LogViewer**: Terminal-style output with auto-scroll and ANSI color support.
+  - **Iteration**: Current vs Max.
+  - **Progress**: % of tasks completed in the blueprint.
+  - **Intelligence**: Token consumption (Input/Output) and estimated cost.
+  - **Velocity**: Time elapsed and average time per iteration.
+  - **Density**: Heatmap of LLM inquiries per iteration.
+- **LogViewer**: ANSI-highlighted terminal stream with filtering (Thoughts, Errors, Tools) and search.
+- **Blueprint Sidebar**: Checklist of tasks grouped by phases with "Active Focus" highlighting.
 
-## 5. Failure Recovery & Robustness
-- **Zombie Detection**: If `state.active` is true but the process in `runner.pid` does not exist (checked via `process.kill(pid, 0)`), the UI shows a "Zombie" state and allows cleanup.
-- **Process Group Kill**: Stopping the loop kills the entire shell tree to prevent orphaned `gemini` or `claude` processes.
+## 4. Data Structures
 
-## 6. Development Philosophy
-- **No Placeholders**: If data isn't available from the system, don't show it or show "N/A".
-- **Fail Fast**: The commander should be the first thing to tell you if the agent is stuck.
-- **Lightweight**: Zero-config where possible; rely on standard paths.
+### 4.1 State File (`.gemini/ralph-loop.local.md`)
+```yaml
+---
+active: boolean
+iteration: number
+max_iterations: number
+completion_promise: string
+started_at: ISO8601
+agent: "gemini" | "claude"
+model: string
+queries: number
+phase: string
+---
+<Initial Prompt Content>
+```
+
+### 4.2 Stats File (`.gemini/stats.json`)
+Used for historical tracking of iteration performance and token density.
+```json
+{
+  "iteration_times": [
+    { "iteration": number, "duration_ms": number, "queries": number }
+  ],
+  "models": {
+    "<model_name>": {
+      "tokens": { "input": number, "candidates": number, "total": number }
+    }
+  }
+}
+```
+
+## 5. Lifecycle Phases
+Ralph Commander enforces a structured development lifecycle:
+1. **Elaboration (🔍)**: Agent analyzes the prompt and creates `specs/requirements_internal.md`.
+2. **Planning (📝)**: Agent creates `@fix_plan.md`.
+3. **Implementation (🔄)**: Agent executes tasks, updating status in real-time.
+
+## 6. "Fail Fast" Principles
+- **Zombie Detection**: Backend checks if the process in `runner.pid` is actually alive.
+- **Instant Kill**: The "Kill Agent" button sends `SIGTERM` to the entire process group.
+- **Uplink Monitoring**: Visual indicator for WebSocket connection stability.
+- **Validation**: Strict schema validation for missions before launch.
+
+## 7. Development Guidelines
+- **No Placeholder Code**: Every feature must be fully functional.
+- **Responsive Design**: UI must scale from laptops to large ultra-wide monitors.
+- **Theming**: Integrated Dark/Light mode support.

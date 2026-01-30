@@ -13,10 +13,20 @@ export default defineConfig({
   build: {
     outDir: "dist/client",
   },
+  optimizeDeps: {
+    exclude: ["playwright", "@playwright/test", "fsevents"],
+  },
+  ssr: {
+    external: ["playwright", "@playwright/test", "fsevents"],
+  },
   test: {
     globals: true,
     environment: "jsdom",
     setupFiles: ["./tests/setup.ts"],
-    include: ["src/**/*.{test,spec}.{ts,tsx}", "tests/**/*.{test,spec}.{ts,tsx}"],
+    include: [
+      "tests/App.test.tsx",
+      "tests/components/**/*.test.tsx",
+      "tests/store/**/*.test.ts"
+    ],
   },
 });

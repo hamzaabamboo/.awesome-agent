@@ -1,5 +1,10 @@
-import { describe, it, expect, mock } from "bun:test";
-mock.module("vike/server", () => ({ renderPage: mock(async () => ({ httpResponse: null })), createDevMiddleware: mock(async () => ({ devMiddleware: () => {} })) }));
+import { describe, it, expect, vi } from "vitest";
+
+vi.mock("vike/server", () => ({
+  renderPage: vi.fn(async () => ({ httpResponse: null })),
+  createDevMiddleware: vi.fn(async () => ({ devMiddleware: () => {} }))
+}));
+
 import { app } from "../src/server/index";
 
 describe("WebSocket", () => {
@@ -23,7 +28,8 @@ describe("WebSocket", () => {
       };
 
       ws.onmessage = (event) => {
-        if (event.data === "pong") {
+        const msg = JSON.parse(event.data as string);
+        if (msg.type === "pong") {
           clearTimeout(timeout);
           ws.close();
           app.stop();

@@ -3,6 +3,8 @@ import { useRalphStore } from '../../src/renderer/store/useRalphStore';
 
 describe('useRalphStore', () => {
   beforeEach(() => {
+    console.log('useRalphStore type:', typeof useRalphStore);
+    console.log('useRalphStore.setState type:', typeof (useRalphStore as any).setState);
     // Reset store state manually if needed, or just rely on fresh import
     useRalphStore.setState({
       status: null,
