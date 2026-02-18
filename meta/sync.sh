@@ -58,9 +58,17 @@ process_skill_dir() {
             mkdir -p "$dest_root/$skill_name"
             rsync -aK "$skill_path/" "$dest_root/$skill_name/"
             
+            local skill_file="$dest_root/$skill_name/SKILL.md"
+            
+            # Fix frontmatter name to match directory name (OpenCode requirement)
+            if [ -f "$skill_file" ]; then
+                log "  Normalizing name in frontmatter..."
+                sed -i.bak "s/^name:.*/name: $skill_name/" "$skill_file"
+                rm -f "$skill_file.bak"
+            fi
+            
             # Stitch modular rules if present
             if [ -d "$dest_root/$skill_name/rules" ]; then
-                local skill_file="$dest_root/$skill_name/SKILL.md"
                 if [ -f "$skill_file" ]; then
                     log "  Stitching rules for $skill_name..."
                     sed -n '1,/---/p' "$skill_file" > "$skill_file.tmp"
@@ -285,6 +293,22 @@ for agent in gemini claude; do
     done
 done
 
+# 8. OpenCode Support
+OPENCODE_CONFIG="$TARGET_ROOT/.config/opencode"
+if [ -d "$OPENCODE_CONFIG" ] || [ -d "$TARGET_ROOT/.openclaw" ]; then
+    log "Deploying for opencode..."
+    mkdir -p "$OPENCODE_CONFIG/skills"
+    
+    find "$TARGET_ROOT/.agent/skills" -maxdepth 1 -mindepth 1 -type d | while read skill_path; do
+        skill_name=$(basename "$skill_path")
+        
+        rm -rf "$OPENCODE_CONFIG/skills/$skill_name"
+        ln -sf "$skill_path" "$OPENCODE_CONFIG/skills/$skill_name"
+    done
+    
+    echo "OpenCode skills linked to $OPENCODE_CONFIG/skills/"
+fi
+
 # Cleanup local build if it's not in temp
 if [[ "$BUILD_DIR" == .build* ]]; then
     rm -rf .build
@@ -294,3 +318,4 @@ echo "---"
 echo "Sync complete. All skills unified in shared/skills and agents/*/skills."
 echo "Index location: $AGENTS_MD"
 echo "Skill store: $TARGET_ROOT/.agent/skills/"
+echo "OpenCode: $TARGET_ROOT/.config/opencode/skills/"
