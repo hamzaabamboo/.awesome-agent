@@ -48,25 +48,25 @@ mkdir -p "$BUILD_DIR"
 process_skill_dir() {
     local src=$1
     local dest_root=$2
-    
+
     find "$src" -maxdepth 1 -mindepth 1 | while read skill_path; do
         local skill_name=$(basename "$skill_path")
-        
+
         if [ -d "$skill_path" ]; then
             # Directory-based skill
             log "Processing directory skill: $skill_name"
             mkdir -p "$dest_root/$skill_name"
             rsync -aK "$skill_path/" "$dest_root/$skill_name/"
-            
+
             local skill_file="$dest_root/$skill_name/SKILL.md"
-            
+
             # Fix frontmatter name to match directory name (OpenCode requirement)
             if [ -f "$skill_file" ]; then
                 log "  Normalizing name in frontmatter..."
                 sed -i.bak "s/^name:.*/name: $skill_name/" "$skill_file"
                 rm -f "$skill_file.bak"
             fi
-            
+
             # Stitch modular rules if present
             if [ -d "$dest_root/$skill_name/rules" ]; then
                 if [ -f "$skill_file" ]; then
@@ -102,28 +102,28 @@ COMMANDS_DIR="./shared/commands"
 process_commands() {
     local src_dir=$1
     if [ ! -d "$src_dir" ]; then return; fi
-    
+
     log "Processing shared commands from $src_dir..."
-    
+
     find "$src_dir" -name "*.md" | while read cmd_path; do
         local cmd_filename=$(basename "$cmd_path")
         local cmd_name="${cmd_filename%.md}"
-        
+
         # 1. Deploy to Claude (Symlink)
         mkdir -p "$TARGET_ROOT/.claude/commands"
         log "  Linking $cmd_name for Claude..."
         rm -f "$TARGET_ROOT/.claude/commands/$cmd_filename"
         ln -sf "$(pwd)/$cmd_path" "$TARGET_ROOT/.claude/commands/$cmd_filename"
-        
+
         # 2. Deploy to Gemini (Generate TOML)
         # Note: We assume these go into 'init-repo' extension for now, as that's the primary use case.
         # Ideally, we'd have a mapping or a 'core-commands' extension.
         local gemini_ext_dir="$TARGET_ROOT/.gemini/extensions/init-repo/commands"
         mkdir -p "$gemini_ext_dir"
-        
+
         log "  Generating $cmd_name.toml for Gemini..."
         local toml_file="$gemini_ext_dir/$cmd_name.toml"
-        
+
         # Use python for robust frontmatter stripping and TOML generation
         python3 -c "
 import sys
@@ -180,14 +180,11 @@ if [ -f "$CORE_PROFILE" ]; then
         cat "$CORE_PROFILE" > "$AGENTS_MD"
         echo "" >> "$AGENTS_MD"
         echo "# SKILLS SYSTEM" >> "$AGENTS_MD"
-        echo '<skills_system priority="1">' >> "$AGENTS_MD"
         echo "" >> "$AGENTS_MD"
         echo "## Available Skills" >> "$AGENTS_MD"
         echo "" >> "$AGENTS_MD"
         echo "<!-- SKILLS_TABLE_START -->" >> "$AGENTS_MD"
         echo "<!-- SKILLS_TABLE_END -->" >> "$AGENTS_MD"
-        echo "" >> "$AGENTS_MD"
-        echo "</skills_system>" >> "$AGENTS_MD"
     fi
 fi
 
@@ -200,35 +197,70 @@ OPENSKILLS_ARGS="-o $AGENTS_MD"
 if [ "$YES" = true ]; then
     OPENSKILLS_ARGS="$OPENSKILLS_ARGS -y"
 fi
-npx openskills sync $OPENSKILLS_ARGS
+if ! npx openskills sync $OPENSKILLS_ARGS; then
+    echo "Warning: openskills sync failed; continuing with existing $AGENTS_MD."
+fi
 rm .agent/skills
 rmdir .agent 2>/dev/null || true
 
-# Post-process AGENTS.md to ensure absolute paths for Gemini CLI native integration
-log "Rewriting skill locations in $AGENTS_MD for native integration..."
-# Use a temporary file for the rewrite
-TMP_AGENTS_MD=$(mktemp)
-sed "s|<location>project</location>|<location>$TARGET_ROOT/.gemini/skills/SKILL_NAME_HINT/SKILL.md</location>|g" "$AGENTS_MD" > "$TMP_AGENTS_MD"
-# This is a bit tricky with sed. Let's use a small perl/python script or a loop.
-# We want to replace each <location>...</location> with the correct path based on the preceding <name>... </name>
+# Post-process AGENTS.md to ensure absolute paths and convert XML to Markdown
+log "Converting XML skills to Markdown and updating paths..."
 
 python3 -c "
 import sys, re, os
+
 path = sys.argv[1]
 target_root = sys.argv[2]
 with open(path, 'r') as f:
     content = f.read()
 
-def replace_location(match):
-    skill_name = match.group(1)
-    return f'<name>{skill_name}</name>\n<description>{match.group(2)}</description>\n<location>{target_root}/.gemini/skills/{skill_name}/SKILL.md</location>'
+start_marker = '<!-- SKILLS_TABLE_START -->'
+end_marker = '<!-- SKILLS_TABLE_END -->'
 
-# Match <name>...</name>, <description>...</description>, <location>...</location>
-pattern = re.compile(r'<name>([^<]+)</name>\s*<description>([^<]*)</description>\s*<location>[^<]+</location>', re.DOTALL)
-new_content = pattern.sub(replace_location, content)
+first_start = content.find(start_marker)
+last_end = content.rfind(end_marker)
 
-with open(path, 'w') as f:
-    f.write(new_content)
+if first_start != -1 and last_end != -1 and last_end > first_start:
+    prefix = content[:first_start + len(start_marker)]
+    inner = content[first_start + len(start_marker):last_end]
+    suffix = content[last_end:]
+
+    # Clean inner markers to prevent nesting if openskills inserted them
+    inner = inner.replace(start_marker, '').replace(end_marker, '')
+
+    output = []
+
+    # 1. Extract Usage using Regex (robust against nested <tags> in backticks)
+    usage_match = re.search(r'<usage>(.*?)</usage>', inner, re.DOTALL)
+    if usage_match:
+        usage_text = usage_match.group(1).strip()
+        output.append('### Usage')
+        output.append(usage_text + '\n')
+
+    # 2. Extract Skills using Regex
+    skill_pattern = re.compile(r'<skill>\s*<name>(.*?)</name>\s*<description>(.*?)</description>.*?</skill>', re.DOTALL)
+    skills = skill_pattern.findall(inner)
+
+    if skills:
+        output.append('### Available Skills\n')
+        output.append('| Name | Description | Location |')
+        output.append('| :--- | :--- | :--- |')
+        for name, desc in skills:
+            name = name.strip()
+            # Clean up description: strip, remove newlines, remove quotes if present
+            desc = desc.strip().replace('\n', ' ')
+            if desc.startswith('\"') and desc.endswith('\"'):
+                desc = desc[1:-1].strip()
+
+            # Location in AGENTS.md should be absolute path for Gemini CLI native integration
+            loc = f'{target_root}/.gemini/skills/{name}/SKILL.md'
+            output.append(f'| {name} | {desc} | {loc} |')
+
+    new_inner = '\n\n' + '\n'.join(output) + '\n\n'
+    new_content = prefix + new_inner + suffix
+
+    with open(path, 'w') as f:
+        f.write(new_content)
 " "$AGENTS_MD" "$TARGET_ROOT"
 
 # 6. Deploy to Home
@@ -240,16 +272,16 @@ rsync -aKq --delete "$BUILD_DIR/" "$TARGET_ROOT/.agent/skills/"
 for agent in gemini claude; do
     log "Deploying for $agent..."
     mkdir -p "$TARGET_ROOT/.$agent"
-    
+
     # 7.1 Link Universal Prompt
     agent_upper=$(echo "$agent" | tr '[:lower:]' '[:upper:]')
     ln -sf "$(pwd)/$AGENTS_MD" "$TARGET_ROOT/.$agent/${agent_upper}.md"
-    
+
     # 7.2 Sync agent-specific files (overrides)
     if [ -d "$AGENTS_DIR/$agent" ]; then
         # Exclude 'skills' from general rsync as we handle it specifically
         rsync -aKq --exclude ".git" --exclude "skills" "$AGENTS_DIR/$agent/" "$TARGET_ROOT/.$agent/"
-        
+
         # 7.3 Agent-Specific Skills (Overrides)
         if [ -d "$AGENTS_DIR/$agent/skills" ]; then
             log "  Processing agent-specific skills for $agent..."
@@ -257,13 +289,13 @@ for agent in gemini claude; do
             AGENT_BUILD_DIR=".build/skills_$agent"
             mkdir -p "$AGENT_BUILD_DIR"
             process_skill_dir "$AGENTS_DIR/$agent/skills" "$AGENT_BUILD_DIR"
-            
+
             # Sync to home (overwriting shared ones if name matches)
             rsync -aKq "$AGENT_BUILD_DIR/" "$TARGET_ROOT/.agent/skills/"
             rm -rf "$AGENT_BUILD_DIR"
         fi
     fi
-    
+
     # 7.4 Maintain Legacy Symlinks & Antigravity Support
     log "  Maintaining legacy symlinks & Antigravity support for $agent..."
     mkdir -p "$TARGET_ROOT/.$agent/skills"
@@ -275,14 +307,14 @@ for agent in gemini claude; do
         rm -rf "$TARGET_ROOT/.$agent/antigravity/skills"
         ln -sf "$TARGET_ROOT/.agent/skills" "$TARGET_ROOT/.$agent/antigravity/skills"
     fi
-    
+
     find "$TARGET_ROOT/.agent/skills" -maxdepth 1 -mindepth 1 -type d | while read skill_path; do
         skill_name=$(basename "$skill_path")
-        
+
         # Clean up existing to avoid nesting
         rm -rf "$TARGET_ROOT/.$agent/skills/$skill_name"
         ln -sf "$skill_path" "$TARGET_ROOT/.$agent/skills/$skill_name"
-        
+
         if [ "$agent" == "gemini" ]; then
             rm -f "$TARGET_ROOT/.$agent/$skill_name.md"
             ln -sf "$skill_path/SKILL.md" "$TARGET_ROOT/.$agent/$skill_name.md"
@@ -298,16 +330,38 @@ OPENCODE_CONFIG="$TARGET_ROOT/.config/opencode"
 if [ -d "$OPENCODE_CONFIG" ] || [ -d "$TARGET_ROOT/.openclaw" ]; then
     log "Deploying for opencode..."
     mkdir -p "$OPENCODE_CONFIG/skills"
-    
+
     find "$TARGET_ROOT/.agent/skills" -maxdepth 1 -mindepth 1 -type d | while read skill_path; do
         skill_name=$(basename "$skill_path")
-        
+
         rm -rf "$OPENCODE_CONFIG/skills/$skill_name"
         ln -sf "$skill_path" "$OPENCODE_CONFIG/skills/$skill_name"
     done
-    
+
     echo "OpenCode skills linked to $OPENCODE_CONFIG/skills/"
 fi
+
+# 9. Codex Support
+# Support both documented user-scope (~/.agents/skills) and legacy/current Codex path (~/.codex/skills).
+CODEX_DIR="$TARGET_ROOT/.codex"
+CODEX_USER_SKILLS_DIR="$TARGET_ROOT/.agents/skills"
+CODEX_HOME_SKILLS_DIR="$CODEX_DIR/skills"
+mkdir -p "$CODEX_USER_SKILLS_DIR" "$CODEX_HOME_SKILLS_DIR" "$CODEX_DIR"
+
+find "$TARGET_ROOT/.agent/skills" -maxdepth 1 -mindepth 1 -type d | while read skill_path; do
+    skill_name=$(basename "$skill_path")
+
+    rm -rf "$CODEX_USER_SKILLS_DIR/$skill_name"
+    ln -sf "$skill_path" "$CODEX_USER_SKILLS_DIR/$skill_name"
+
+    # Keep ~/.codex/skills in sync for Codex builds that still read from CODEX_HOME.
+    rm -rf "$CODEX_HOME_SKILLS_DIR/$skill_name"
+    ln -sf "$skill_path" "$CODEX_HOME_SKILLS_DIR/$skill_name"
+done
+
+echo "Codex skills linked to $CODEX_USER_SKILLS_DIR/ and $CODEX_HOME_SKILLS_DIR/"
+log "Linking global AGENTS.md for codex..."
+ln -sf "$(pwd)/$AGENTS_MD" "$CODEX_DIR/AGENTS.md"
 
 # Cleanup local build if it's not in temp
 if [[ "$BUILD_DIR" == .build* ]]; then
@@ -319,3 +373,6 @@ echo "Sync complete. All skills unified in shared/skills and agents/*/skills."
 echo "Index location: $AGENTS_MD"
 echo "Skill store: $TARGET_ROOT/.agent/skills/"
 echo "OpenCode: $TARGET_ROOT/.config/opencode/skills/"
+echo "Codex skills: $TARGET_ROOT/.agents/skills/"
+echo "Codex home skills: $TARGET_ROOT/.codex/skills/"
+echo "Codex AGENTS: $TARGET_ROOT/.codex/AGENTS.md"

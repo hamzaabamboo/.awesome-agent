@@ -15,3 +15,6 @@ This file tracks all major tracks for the project. Each track has its own detail
 
 - [x] **Track: Fix Skill Structure & Format**
   *Link: [./tracks/fix_gemini_skills_20260119/](./tracks/fix_gemini_skills_20260119/)*
+
+- [x] **Track: Refactor XML Instructions to Markdown**
+  *Link: [./tracks/refactor_xml_instructions_20260219/](./tracks/refactor_xml_instructions_20260219/)*

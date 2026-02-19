@@ -1,6 +1,6 @@
 # .awesome-agent
 
-A centralized, DRY (Don't Repeat Yourself), and automated configuration manager for AI agents (Gemini CLI, Claude Code).
+A centralized, DRY (Don't Repeat Yourself), and automated configuration manager for AI agents (Gemini CLI, Claude Code, Codex).
 
 ## Core Philosophy
 
@@ -42,7 +42,7 @@ A centralized, DRY (Don't Repeat Yourself), and automated configuration manager 
 - `rsync` and `sed` (standard on macOS/Linux)
 
 ### 2. Synchronize
-To deploy your configuration to `~/.gemini`, `~/.claude`, and `~/.agent`:
+To deploy your configuration to `~/.gemini`, `~/.claude`, `~/.codex`, `~/.agents`, and `~/.agent`:
 
 ```bash
 ./meta/sync.sh --verbose --yes
@@ -88,6 +88,8 @@ When you run `./meta/sync.sh`, the following happens:
    - All processed skills are rsync'd to `~/.agent/skills/`.
    - `~/.gemini/GEMINI.md` and `~/.claude/CLAUDE.md` are symlinked to `shared/AGENTS.md`.
    - Legacy symlinks are created in `~/.gemini/skills/` and `~/.claude/skills/` for backward compatibility.
+   - Codex user skills are symlinked to `~/.agents/skills/`.
+   - If Codex is installed (`~/.codex` exists), `~/.codex/AGENTS.md` is symlinked to `shared/AGENTS.md`.
 
 ---
 
