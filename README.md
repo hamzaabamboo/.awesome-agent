@@ -6,8 +6,7 @@ A repo-managed prompt and local-skill layer for Gemini CLI, Claude Code, and Cod
 
 - `skills.sh` is the source of truth for non-local skills.
 - This repo stores only shared local custom skills plus the unified prompt/config glue.
-- `meta/sync.sh` syncs the unified prompt plus local custom skills.
-- `meta/install-remote-skills.sh` installs remote skill repos with `npx skills add`.
+- `meta/sync.sh` is the only command you need; it syncs the unified prompt, local custom skills, and remote `skills.sh` installs.
 
 ## Repository Structure
 
@@ -19,8 +18,8 @@ A repo-managed prompt and local-skill layer for Gemini CLI, Claude Code, and Cod
 - `shared/remote-skills.txt`: Remote skill repos that should be installed via `skills.sh`.
 
 ### `meta/`
-- `meta/sync.sh`: Builds local skills, renders `shared/AGENTS.md`, cleans foreign Claude links, and syncs only the repo-managed shared prompt/skill layer.
-- `meta/install-remote-skills.sh`: Installs remote skill repos listed in `shared/remote-skills.txt`.
+- `meta/sync.sh`: Builds local skills, renders `shared/AGENTS.md`, installs remote `skills.sh` entries from `shared/remote-skills.txt`, and syncs the shared prompt/skill layer.
+- `meta/install-remote-skills.sh`: Internal helper invoked by `meta/sync.sh`.
 
 ## Usage
 
@@ -36,25 +35,13 @@ Flags:
 - `-d`, `--dry-run`: show intended filesystem actions without writing
 - `-y`, `--yes`: non-interactive mode
 
-### Install remote skills from `skills.sh`
-
-```bash
-./meta/install-remote-skills.sh
-```
-
-Dry run:
-
-```bash
-./meta/install-remote-skills.sh --dry-run
-```
-
 ### Add a new local skill
 
 Put it in `shared/local-skills/<name>/SKILL.md` or `shared/local-skills/<name>.md`.
 
 ### Add a new remote skill repo
 
-Add the repo to `shared/remote-skills.txt` and install it with `meta/install-remote-skills.sh`.
+Add the repo to `shared/remote-skills.txt`, then run `./meta/sync.sh --yes`.
 
 ## Behavior
 
@@ -63,5 +50,6 @@ Running `meta/sync.sh`:
 1. Renders `shared/AGENTS.md` from `shared/core_profile.md` plus `shared/skill_system.md`.
 2. Normalizes local skills into the canonical local store at `~/.agent/skills`.
 3. Links `~/.claude/CLAUDE.md`, `~/.gemini/GEMINI.md`, and `~/.codex/AGENTS.md` to the same prompt file.
-4. Replaces foreign `~/.claude/commands` and `~/.claude/rules` links so project-specific junk does not bleed into the global setup.
-5. Leaves agent skill directories alone so `npx skills add` can manage remote skills without this repo overwriting them.
+4. Replaces `~/.claude/commands` and `~/.claude/rules` links that are not managed by this repo before syncing the shared global setup.
+5. Installs every remote skill entry from `shared/remote-skills.txt`.
+6. Leaves real skill directories alone instead of deleting them during sync.

@@ -8,13 +8,14 @@ LOCAL_SHARED_SKILLS="$PROJECT_ROOT/shared/local-skills"
 CORE_PROFILE="$PROJECT_ROOT/shared/core_profile.md"
 SKILL_SYSTEM="$PROJECT_ROOT/shared/skill_system.md"
 AGENTS_MD="$PROJECT_ROOT/shared/AGENTS.md"
+REMOTE_SKILLS_INSTALLER="$PROJECT_ROOT/meta/install-remote-skills.sh"
 BUILD_ROOT="${PROJECT_TEMP_DIR:-$PROJECT_ROOT/.build}"
 BUILD_SKILLS_DIR="$BUILD_ROOT/skills"
-CONFLICTING_CLAUDE_RULES_REPO="${CONFLICTING_CLAUDE_RULES_REPO:-$HOME/work/shinkijigyousitu/new-business-claude-rules}"
 VERBOSE=false
 CLEAN=false
 DRY_RUN=false
 YES=false
+SKIP_REMOTE_SKILLS_INSTALL="${SKIP_REMOTE_SKILLS_INSTALL:-false}"
 
 while [[ "$#" -gt 0 ]]; do
     case "$1" in
@@ -94,49 +95,20 @@ clean_broken_symlinks() {
     done
 }
 
-clean_foreign_claude_paths() {
+clean_claude_paths() {
     local claude_dir="$TARGET_ROOT/.claude"
     local commands_path="$claude_dir/commands"
     local rules_path="$claude_dir/rules"
 
     if [ -L "$commands_path" ] && [ "$(readlink "$commands_path")" != "$claude_dir/commands" ]; then
-        log "Removing foreign Claude commands link: $commands_path"
+        log "Removing Claude commands link not managed by this repo: $commands_path"
         run rm -f "$commands_path"
     fi
 
     if [ -L "$rules_path" ]; then
-        log "Removing foreign Claude rules link: $rules_path"
+        log "Removing Claude rules link not managed by this repo: $rules_path"
         run rm -f "$rules_path"
     fi
-}
-
-disable_conflicting_claude_rules_repo() {
-    local repo_root="$CONFLICTING_CLAUDE_RULES_REPO"
-    local source_hook="$repo_root/.git-hooks/post-merge"
-    local active_hook="$repo_root/.git/hooks/post-merge"
-
-    if [ ! -d "$repo_root" ]; then
-        return 0
-    fi
-
-    for hook_path in "$source_hook" "$active_hook"; do
-        if [ ! -f "$hook_path" ]; then
-            continue
-        fi
-
-        if ! grep -q "Running setup.sh to apply changes" "$hook_path"; then
-            continue
-        fi
-
-        local disabled_path="$hook_path.disabled-by-awesome-agent"
-        if [ -e "$disabled_path" ]; then
-            log "Removing conflicting Claude rules hook: $hook_path"
-            run rm -f "$hook_path"
-        else
-            log "Disabling conflicting Claude rules hook: $hook_path"
-            run mv "$hook_path" "$disabled_path"
-        fi
-    done
 }
 
 clean_legacy_skill_links() {
@@ -147,10 +119,29 @@ clean_legacy_skill_links() {
         "$TARGET_ROOT/.agents/skills" \
         "$TARGET_ROOT/.codex/skills"
     do
-        if [ -e "$path" ] || [ -L "$path" ]; then
+        if [ -L "$path" ]; then
             run rm -rf "$path"
         fi
     done
+}
+
+install_remote_skills() {
+    if [ "$SKIP_REMOTE_SKILLS_INSTALL" = true ]; then
+        log "Skipping remote skills install."
+        return 0
+    fi
+
+    if [ ! -x "$REMOTE_SKILLS_INSTALLER" ]; then
+        echo "Remote skills installer not found: $REMOTE_SKILLS_INSTALLER" >&2
+        exit 1
+    fi
+
+    if [ "$DRY_RUN" = true ]; then
+        "$REMOTE_SKILLS_INSTALLER" --dry-run
+        return 0
+    fi
+
+    "$REMOTE_SKILLS_INSTALLER"
 }
 
 normalize_skill() {
@@ -263,6 +254,34 @@ render_agents_prompt() {
     cat "$CORE_PROFILE" > "$AGENTS_MD"
     printf '\n' >> "$AGENTS_MD"
     cat "$SKILL_SYSTEM" >> "$AGENTS_MD"
+
+    python3 - "$BUILD_SKILLS_DIR" >> "$AGENTS_MD" <<'PY'
+import pathlib
+import re
+import sys
+
+skills_dir = pathlib.Path(sys.argv[1])
+skill_dirs = sorted([p for p in skills_dir.iterdir() if p.is_dir()]) if skills_dir.exists() else []
+
+print("\n## Repo-Local Skills\n")
+
+if not skill_dirs:
+    print("- None")
+    sys.exit(0)
+
+for skill_dir in skill_dirs:
+    skill_file = skill_dir / "SKILL.md"
+    description = ""
+    if skill_file.exists():
+        text = skill_file.read_text()
+        match = re.search(r"^description:\s*(.*)$", text, re.MULTILINE)
+        if match:
+            description = match.group(1).strip()
+    line = f"- `{skill_dir.name}`"
+    if description:
+        line += f": {description}"
+    print(line)
+PY
 }
 
 sync_claude_commands() {
@@ -324,8 +343,7 @@ if [ "$CLEAN" = true ]; then
     clean_broken_symlinks
 fi
 
-clean_foreign_claude_paths
-disable_conflicting_claude_rules_repo
+clean_claude_paths
 
 run rm -rf "$BUILD_SKILLS_DIR"
 run mkdir -p "$BUILD_SKILLS_DIR"
@@ -351,6 +369,7 @@ sync_gemini_commands
 reset_dir "$TARGET_ROOT/.claude/rules"
 link_path "$AGENTS_MD" "$TARGET_ROOT/.codex/AGENTS.md"
 clean_legacy_skill_links
+install_remote_skills
 
 if [[ "$BUILD_ROOT" == "$PROJECT_ROOT/.build" ]] && [ "$DRY_RUN" = false ]; then
     run rm -rf "$BUILD_ROOT"

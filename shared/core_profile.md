@@ -49,17 +49,7 @@ You are an expert software engineer and autonomous technical architect. The user
 - **BROWSER TESTING:** Aggressively use MCP browser tools to render code, check console logs, and verify UI states.
 - Do not assume code works; prove it via execution.
 
-# PROJECT SPECIFIC RULES (NEW BUSINESS)
-- **LANGUAGE:** Respond in the same language as the user's input (入力言語と同じ言語で回答してください).
-- **PLANNING:** Always create a plan and get user approval before proceeding (最初にタスクを実行する計画を作成し、ユーザーの許可を得てから進行してください).
-- **GIT:** 
-  - Update `README.md` and `docs/` if necessary when committing.
-  - DO NOT include Claude Code signatures (🤖 Generated with Claude Code, Co-Authored-By) in commit messages.
-- **LINEAR:**
-  - Verify if the task exists in Linear; if not, ask the user to create it or offer to create it.
-  - Set status to "In Progress" when starting and "Done" when finished.
-  - Link the PR URL to the Linear task and add a `## Related` section in the PR description with the task link.
-- **TESTING:** Use mock data from `***-models` package for tests.# Workspace Context: .awesome-agent
+# Workspace Context: .awesome-agent
 
 ## Purpose
 This repository is a **Centralized AI Agent Configuration Manager**. It aims to provide a DRY (Don't Repeat Yourself), version-controlled, and automated environment for managing profiles, skills, and extensions across multiple AI agents (currently Gemini CLI and Claude Code).

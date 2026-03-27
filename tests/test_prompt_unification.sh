@@ -12,6 +12,7 @@ test_prompt_unification() {
     echo "Testing prompt unification..."
 
     export TARGET_ROOT="$HOME_MOCK"
+    export SKIP_REMOTE_SKILLS_INSTALL=true
 
     $SYNC_SCRIPT --yes
 

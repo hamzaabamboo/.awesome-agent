@@ -8,8 +8,8 @@ HOME_MOCK="$(pwd)/tests/mock_home"
 rm -rf "$HOME_MOCK"
 mkdir -p "$HOME_MOCK/.gemini" "$HOME_MOCK/.claude"
 ln -s "/tmp/non_existent_file_12345" "$HOME_MOCK/.gemini/broken_link"
-ln -s "/Users/vittayapalotai.tanyawat/work/shinkijigyousitu/new-business-claude-rules/rules" "$HOME_MOCK/.claude/rules"
-ln -s "/Users/vittayapalotai.tanyawat/work/shinkijigyousitu/new-business-claude-rules/commands" "$HOME_MOCK/.claude/commands"
+ln -s "/tmp/mock-claude-rules" "$HOME_MOCK/.claude/rules"
+ln -s "/tmp/mock-claude-commands" "$HOME_MOCK/.claude/commands"
 mkdir -p "$HOME_MOCK/.claude/plugins"
 ln -s "$HOME_MOCK/.agent/skills" "$HOME_MOCK/.claude/skills"
 ln -s "$HOME_MOCK/.agent/skills" "$HOME_MOCK/.gemini/skills"
@@ -18,6 +18,7 @@ test_cleanup() {
     echo "Testing cleanup logic..."
 
     export TARGET_ROOT="$HOME_MOCK"
+    export SKIP_REMOTE_SKILLS_INSTALL=true
 
     $SYNC_SCRIPT --clean --yes
 
@@ -27,12 +28,12 @@ test_cleanup() {
     fi
 
     if [ -L "$HOME_MOCK/.claude/rules" ]; then
-        echo "FAIL: Foreign Claude rules symlink still exists"
+        echo "FAIL: Claude rules symlink still exists"
         exit 1
     fi
 
     if [ -L "$HOME_MOCK/.claude/commands" ]; then
-        echo "FAIL: Foreign Claude commands symlink still exists"
+        echo "FAIL: Claude commands symlink still exists"
         exit 1
     fi
 

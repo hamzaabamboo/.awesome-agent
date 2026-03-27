@@ -6,6 +6,8 @@ vercel-labs/agent-browser|agent-browser
 nextlevelbuilder/ui-ux-pro-max-skill|ui-ux-pro-max
 vercel-labs/agent-browser|dogfood
 google-labs-code/stitch-skills|stitch-design
+andrelandgraf/fullstackrecipes|ralph-loop
+fstandhartinger/ralph-wiggum|ralph-wiggum
 vercel-labs/agent-skills
 obra/superpowers
 elysiajs/skills

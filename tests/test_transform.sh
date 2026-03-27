@@ -20,7 +20,8 @@ EOF
 test_transform() {
     echo "Testing skill normalization..."
 
-    export TARGET_ROOT="$HOME_MOCK"
+export TARGET_ROOT="$HOME_MOCK"
+export SKIP_REMOTE_SKILLS_INSTALL=true
 
     $SYNC_SCRIPT --yes
 
