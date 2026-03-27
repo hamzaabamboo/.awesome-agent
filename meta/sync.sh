@@ -1,25 +1,43 @@
 #!/bin/bash
-# meta/sync.sh - Standardized Sync Engine (OpenSkills Compatible)
 
-set -e
+set -euo pipefail
 
-# Configuration
 TARGET_ROOT="${TARGET_ROOT:-$HOME}"
-SHARED_SKILLS="./shared/skills"
-AGENTS_DIR="./agents"
-AGENTS_MD="./shared/AGENTS.md"
-CORE_PROFILE="./shared/core_profile.md"
+PROJECT_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+LOCAL_SHARED_SKILLS="$PROJECT_ROOT/shared/local-skills"
+AGENTS_DIR="$PROJECT_ROOT/agents"
+CORE_PROFILE="$PROJECT_ROOT/shared/core_profile.md"
+SKILL_SYSTEM="$PROJECT_ROOT/shared/skill_system.md"
+AGENTS_MD="$PROJECT_ROOT/shared/AGENTS.md"
+BUILD_ROOT="${PROJECT_TEMP_DIR:-$PROJECT_ROOT/.build}"
+BUILD_SKILLS_DIR="$BUILD_ROOT/skills"
+CONFLICTING_CLAUDE_RULES_REPO="${CONFLICTING_CLAUDE_RULES_REPO:-$HOME/work/shinkijigyousitu/new-business-claude-rules}"
 VERBOSE=false
 CLEAN=false
+DRY_RUN=false
 YES=false
 
-# Parse arguments
 while [[ "$#" -gt 0 ]]; do
-    case $1 in
-        -v|--verbose) VERBOSE=true ;;
-        -c|--clean) CLEAN=true ;;
-        -y|--yes) YES=true ;;
-        *) echo "Unknown parameter: $1"; exit 1 ;;
+    case "$1" in
+        -v|--verbose)
+            VERBOSE=true
+            echo "Verbose mode enabled."
+            ;;
+        -c|--clean)
+            CLEAN=true
+            echo "Clean mode enabled."
+            ;;
+        -d|--dry-run)
+            DRY_RUN=true
+            echo "Dry run mode enabled."
+            ;;
+        -y|--yes)
+            YES=true
+            ;;
+        *)
+            echo "Unknown parameter: $1"
+            exit 1
+            ;;
     esac
     shift
 done
@@ -30,349 +48,354 @@ log() {
     fi
 }
 
-echo "Standardizing skills..."
+run() {
+    if [ "$DRY_RUN" = true ]; then
+        log "[dry-run] $*"
+        return 0
+    fi
+    "$@"
+}
 
-# 1. Ensure openskills is available
-if ! command -v npx &> /dev/null; then
-    echo "Error: npx not found. Node.js is required for openskills compatibility."
-    exit 1
-fi
+reset_dir() {
+    local path="$1"
+    if [ -L "$path" ] || [ -f "$path" ]; then
+        run rm -f "$path"
+    elif [ -d "$path" ]; then
+        run rm -rf "$path"
+    fi
+    run mkdir -p "$path"
+}
 
-# 2. Local BUILD directory for intermediate state (to avoid polluting repo)
-# Use the project's temporary directory if provided, otherwise a local .build
-BUILD_DIR="${PROJECT_TEMP_DIR:-./.build}/skills"
-rm -rf "$BUILD_DIR"
-mkdir -p "$BUILD_DIR"
+link_path() {
+    local source="$1"
+    local target="$2"
+    run mkdir -p "$(dirname "$target")"
+    if [ -e "$target" ] || [ -L "$target" ]; then
+        run rm -rf "$target"
+    fi
+    run ln -s "$source" "$target"
+}
 
-# 3. Helper to process skills into OpenSkills format
-process_skill_dir() {
-    local src=$1
-    local dest_root=$2
+clean_broken_symlinks() {
+    for root in \
+        "$TARGET_ROOT/.claude" \
+        "$TARGET_ROOT/.gemini" \
+        "$TARGET_ROOT/.agent" \
+        "$TARGET_ROOT/.agents" \
+        "$TARGET_ROOT/.codex"
+    do
+        if [ ! -d "$root" ]; then
+            continue
+        fi
 
-    find "$src" -maxdepth 1 -mindepth 1 | while read skill_path; do
-        local skill_name=$(basename "$skill_path")
+        find "$root" -type l ! -exec test -e {} \; -print 2>/dev/null | while read -r broken_link; do
+            log "Removing broken symlink: $broken_link"
+            run rm -f "$broken_link"
+        done
+    done
+}
 
-        if [ -d "$skill_path" ]; then
-            # Directory-based skill
-            log "Processing directory skill: $skill_name"
-            mkdir -p "$dest_root/$skill_name"
-            rsync -aK "$skill_path/" "$dest_root/$skill_name/"
+clean_foreign_claude_paths() {
+    local claude_dir="$TARGET_ROOT/.claude"
+    local commands_path="$claude_dir/commands"
+    local rules_path="$claude_dir/rules"
 
-            local skill_file="$dest_root/$skill_name/SKILL.md"
+    if [ -L "$commands_path" ] && [ "$(readlink "$commands_path")" != "$claude_dir/commands" ]; then
+        log "Removing foreign Claude commands link: $commands_path"
+        run rm -f "$commands_path"
+    fi
 
-            # Fix frontmatter name to match directory name (OpenCode requirement)
-            if [ -f "$skill_file" ]; then
-                log "  Normalizing name in frontmatter..."
-                sed -i.bak "s/^name:.*/name: $skill_name/" "$skill_file"
-                rm -f "$skill_file.bak"
-            fi
+    if [ -L "$rules_path" ]; then
+        log "Removing foreign Claude rules link: $rules_path"
+        run rm -f "$rules_path"
+    fi
+}
 
-            # Stitch modular rules if present
-            if [ -d "$dest_root/$skill_name/rules" ]; then
-                if [ -f "$skill_file" ]; then
-                    log "  Stitching rules for $skill_name..."
-                    sed -n '1,/---/p' "$skill_file" > "$skill_file.tmp"
-                    cat "$dest_root/$skill_name/rules"/*.md >> "$skill_file.tmp" 2>/dev/null || true
-                    mv "$skill_file.tmp" "$skill_file"
-                fi
-            fi
-        elif [[ "$skill_path" == *.md ]]; then
-            # Flat file skill -> convert to directory
-            local name_no_ext="${skill_name%.md}"
-            log "Processing flat skill: $name_no_ext"
-            mkdir -p "$dest_root/$name_no_ext"
-            cp "$skill_path" "$dest_root/$name_no_ext/SKILL.md"
+disable_conflicting_claude_rules_repo() {
+    local repo_root="$CONFLICTING_CLAUDE_RULES_REPO"
+    local source_hook="$repo_root/.git-hooks/post-merge"
+    local active_hook="$repo_root/.git/hooks/post-merge"
+
+    if [ ! -d "$repo_root" ]; then
+        return 0
+    fi
+
+    for hook_path in "$source_hook" "$active_hook"; do
+        if [ ! -f "$hook_path" ]; then
+            continue
+        fi
+
+        if ! grep -q "Running setup.sh to apply changes" "$hook_path"; then
+            continue
+        fi
+
+        local disabled_path="$hook_path.disabled-by-awesome-agent"
+        if [ -e "$disabled_path" ]; then
+            log "Removing conflicting Claude rules hook: $hook_path"
+            run rm -f "$hook_path"
+        else
+            log "Disabling conflicting Claude rules hook: $hook_path"
+            run mv "$hook_path" "$disabled_path"
         fi
     done
 }
 
-# 4. Process Shared Skills
-if [ -d "$SHARED_SKILLS" ]; then
-    log "Processing shared skills..."
-    process_skill_dir "$SHARED_SKILLS" "$BUILD_DIR"
-fi
+clean_legacy_skill_links() {
+    for path in \
+        "$TARGET_ROOT/.claude/skills" \
+        "$TARGET_ROOT/.gemini/skills" \
+        "$TARGET_ROOT/.gemini/antigravity/skills" \
+        "$TARGET_ROOT/.agents/skills" \
+        "$TARGET_ROOT/.codex/skills"
+    do
+        if [ -e "$path" ] || [ -L "$path" ]; then
+            run rm -rf "$path"
+        fi
+    done
+}
 
-# 4b. Process Shared Commands (New)
-# Transforms Markdown commands from shared/commands/ to:
-# - ~/.claude/commands/*.md (Symlink)
-# - ~/.gemini/extensions/init-repo/commands/*.toml (Generated)
+normalize_skill() {
+    local skill_root="$1"
+    local skill_name="$2"
+    local skill_file="$skill_root/SKILL.md"
 
-COMMANDS_DIR="./shared/commands"
+    if [ ! -f "$skill_file" ]; then
+        return 0
+    fi
 
-process_commands() {
-    local src_dir=$1
-    if [ ! -d "$src_dir" ]; then return; fi
-
-    log "Processing shared commands from $src_dir..."
-
-    find "$src_dir" -name "*.md" | while read cmd_path; do
-        local cmd_filename=$(basename "$cmd_path")
-        local cmd_name="${cmd_filename%.md}"
-
-        # 1. Deploy to Claude (Symlink)
-        mkdir -p "$TARGET_ROOT/.claude/commands"
-        log "  Linking $cmd_name for Claude..."
-        rm -f "$TARGET_ROOT/.claude/commands/$cmd_filename"
-        ln -sf "$(pwd)/$cmd_path" "$TARGET_ROOT/.claude/commands/$cmd_filename"
-
-        # 2. Deploy to Gemini (Generate TOML)
-        # Note: We assume these go into 'init-repo' extension for now, as that's the primary use case.
-        # Ideally, we'd have a mapping or a 'core-commands' extension.
-        local gemini_ext_dir="$TARGET_ROOT/.gemini/extensions/init-repo/commands"
-        mkdir -p "$gemini_ext_dir"
-
-        log "  Generating $cmd_name.toml for Gemini..."
-        local toml_file="$gemini_ext_dir/$cmd_name.toml"
-
-        # Use python for robust frontmatter stripping and TOML generation
-        python3 -c "
-import sys
-import json
+    python3 - "$skill_file" "$skill_name" <<'PY'
+import pathlib
 import re
+import sys
 
-file_path = sys.argv[1]
+path = pathlib.Path(sys.argv[1])
+skill_name = sys.argv[2]
+text = path.read_text()
 
-with open(file_path, 'r') as f:
-    raw_content = f.read()
+if text.startswith('---'):
+    parts = text.split('---', 2)
+    if len(parts) == 3:
+        frontmatter = parts[1].strip().splitlines()
+        body = parts[2].lstrip('\n')
+        updated = []
+        seen_name = False
+        for line in frontmatter:
+            if re.match(r'^name\s*:', line):
+                updated.append(f'name: {skill_name}')
+                seen_name = True
+            else:
+                updated.append(line)
+        if not seen_name:
+            updated.insert(0, f'name: {skill_name}')
+        path.write_text('---\n' + '\n'.join(updated).strip() + '\n---\n\n' + body)
+        sys.exit(0)
 
-# Extract description from frontmatter if possible, or use filename
-description = \"Agent command\"
-match = re.search(r'^description:\s*(.*)$', raw_content, re.MULTILINE)
+path.write_text(f'---\nname: {skill_name}\n---\n\n{text}')
+PY
+
+    if [ -d "$skill_root/rules" ]; then
+        python3 - "$skill_file" "$skill_root/rules" <<'PY'
+import pathlib
+import sys
+
+skill_path = pathlib.Path(sys.argv[1])
+rules_dir = pathlib.Path(sys.argv[2])
+parts = skill_path.read_text().split('---', 2)
+if len(parts) != 3:
+    sys.exit(0)
+header = '---' + parts[1] + '---'
+body = parts[2].strip()
+rules = []
+for rule in sorted(rules_dir.glob('*.md')):
+    rules.append(rule.read_text().strip())
+chunks = [chunk for chunk in [body] + rules if chunk]
+skill_path.write_text(header + '\n\n' + '\n\n'.join(chunks) + '\n')
+PY
+    fi
+}
+
+copy_skill_dir() {
+    local src="$1"
+    local dest_root="$2"
+    local skill_name
+    skill_name="$(basename "$src")"
+    run mkdir -p "$dest_root/$skill_name"
+    run rsync -a "$src/" "$dest_root/$skill_name/"
+    if [ "$DRY_RUN" = false ]; then
+        normalize_skill "$dest_root/$skill_name" "$skill_name"
+    fi
+}
+
+copy_skill_file() {
+    local src="$1"
+    local dest_root="$2"
+    local skill_name
+    skill_name="$(basename "${src%.md}")"
+    run mkdir -p "$dest_root/$skill_name"
+    run cp "$src" "$dest_root/$skill_name/SKILL.md"
+    if [ "$DRY_RUN" = false ]; then
+        normalize_skill "$dest_root/$skill_name" "$skill_name"
+    fi
+}
+
+process_skill_source() {
+    local source_dir="$1"
+    local dest_root="$2"
+
+    if [ ! -d "$source_dir" ]; then
+        return 0
+    fi
+
+    find "$source_dir" -mindepth 1 -maxdepth 1 | sort | while read -r entry; do
+        if [ -d "$entry" ]; then
+            copy_skill_dir "$entry" "$dest_root"
+        elif [[ "$entry" == *.md ]]; then
+            copy_skill_file "$entry" "$dest_root"
+        fi
+    done
+}
+
+render_agents_prompt() {
+    if [ "$DRY_RUN" = true ]; then
+        log "[dry-run] render $AGENTS_MD"
+        return 0
+    fi
+
+    cat "$CORE_PROFILE" > "$AGENTS_MD"
+    printf '\n' >> "$AGENTS_MD"
+    cat "$SKILL_SYSTEM" >> "$AGENTS_MD"
+}
+
+sync_claude_commands() {
+    local claude_dir="$TARGET_ROOT/.claude"
+    reset_dir "$claude_dir/commands"
+
+    for source_dir in "$PROJECT_ROOT/shared/commands" "$PROJECT_ROOT/agents/claude/commands"; do
+        if [ ! -d "$source_dir" ]; then
+            continue
+        fi
+
+        find "$source_dir" -maxdepth 1 -type f -name '*.md' | sort | while read -r cmd_path; do
+            local cmd_name
+            cmd_name="$(basename "$cmd_path")"
+            link_path "$cmd_path" "$claude_dir/commands/$cmd_name"
+        done
+    done
+}
+
+sync_gemini_commands() {
+    local gemini_dir="$TARGET_ROOT/.gemini/extensions/init-repo/commands"
+    reset_dir "$gemini_dir"
+
+    if [ ! -d "$PROJECT_ROOT/shared/commands" ]; then
+        return 0
+    fi
+
+    find "$PROJECT_ROOT/shared/commands" -maxdepth 1 -type f -name '*.md' | sort | while read -r cmd_path; do
+        local cmd_name
+        cmd_name="$(basename "${cmd_path%.md}")"
+        if [ "$DRY_RUN" = true ]; then
+            log "[dry-run] generate $gemini_dir/$cmd_name.toml"
+            continue
+        fi
+
+        python3 - "$cmd_path" "$gemini_dir/$cmd_name.toml" <<'PY'
+import json
+import pathlib
+import re
+import sys
+
+source = pathlib.Path(sys.argv[1])
+target = pathlib.Path(sys.argv[2])
+raw = source.read_text()
+description = "Agent command"
+match = re.search(r'^description:\s*(.*)$', raw, re.MULTILINE)
 if match:
     description = match.group(1).strip()
-
-# Strip YAML frontmatter if present
-content = raw_content
-if raw_content.startswith('---'):
-    try:
-        parts = raw_content.split('---', 2)
-        if len(parts) >= 3:
-            content = parts[2].strip()
-    except ValueError:
-        pass
-
-# Create TOML content
-print(f'description = {json.dumps(description)}')
-print('prompt = \"\"\"')
-print(content)
-print('\"\"\"')
-" "$cmd_path" > "$toml_file"
-
+content = raw
+if raw.startswith('---'):
+    parts = raw.split('---', 2)
+    if len(parts) == 3:
+        content = parts[2].strip()
+target.write_text(
+    f'description = {json.dumps(description)}\n'
+    'prompt = """\n'
+    + content +
+    '\n"""\n'
+)
+PY
     done
 }
 
-process_commands "$COMMANDS_DIR"
+sync_agent_overrides() {
+    local agent="$1"
+    local source_dir="$AGENTS_DIR/$agent"
+    local target_dir="$TARGET_ROOT/.$agent"
 
-# 5. Use openskills to sync the index into AGENTS.md
-# We do this BEFORE agent-specific overrides so the index reflects the "Universal" set
-# or we could do it after, but shared is usually the source of truth for the index.
-
-# 5.1 Refresh AGENTS.md with Core Profile first
-if [ -f "$CORE_PROFILE" ]; then
-    log "Merging $CORE_PROFILE into $AGENTS_MD..."
-    if grep -q "# SKILLS SYSTEM" "$AGENTS_MD"; then
-        sed -n '/# SKILLS SYSTEM/,$p' "$AGENTS_MD" > "$AGENTS_MD.tmp"
-        cat "$CORE_PROFILE" > "$AGENTS_MD"
-        echo "" >> "$AGENTS_MD"
-        cat "$AGENTS_MD.tmp" >> "$AGENTS_MD"
-        rm "$AGENTS_MD.tmp"
-    else
-        cat "$CORE_PROFILE" > "$AGENTS_MD"
-        echo "" >> "$AGENTS_MD"
-        echo "# SKILLS SYSTEM" >> "$AGENTS_MD"
-        echo "" >> "$AGENTS_MD"
-        echo "## Available Skills" >> "$AGENTS_MD"
-        echo "" >> "$AGENTS_MD"
-        echo "<!-- SKILLS_TABLE_START -->" >> "$AGENTS_MD"
-        echo "<!-- SKILLS_TABLE_END -->" >> "$AGENTS_MD"
+    if [ ! -d "$source_dir" ]; then
+        return 0
     fi
+
+    find "$source_dir" -mindepth 1 -maxdepth 1 | sort | while read -r entry; do
+        local name
+        name="$(basename "$entry")"
+        if [ "$name" = "skills" ] || [ "$name" = "local-skills" ] || [ "$name" = "commands" ]; then
+            continue
+        fi
+        link_path "$entry" "$target_dir/$name"
+    done
+}
+
+echo "Standardizing skills..."
+
+if [ "$YES" = false ]; then
+    log "Running without --yes."
 fi
 
-log "Syncing index into AGENTS.md..."
-# We point openskills to our build dir for indexing
-mkdir -p .agent
-rm -rf .agent/skills
-ln -sf "$(pwd)/$BUILD_DIR" .agent/skills
-OPENSKILLS_ARGS="-o $AGENTS_MD"
-if [ "$YES" = true ]; then
-    OPENSKILLS_ARGS="$OPENSKILLS_ARGS -y"
+if [ "$CLEAN" = true ]; then
+    clean_broken_symlinks
 fi
-if ! npx openskills sync $OPENSKILLS_ARGS; then
-    echo "Warning: openskills sync failed; continuing with existing $AGENTS_MD."
-fi
-rm .agent/skills
-rmdir .agent 2>/dev/null || true
 
-# Post-process AGENTS.md to ensure absolute paths and convert XML to Markdown
-log "Converting XML skills to Markdown and updating paths..."
+clean_foreign_claude_paths
+disable_conflicting_claude_rules_repo
 
-python3 -c "
-import sys, re, os
+run rm -rf "$BUILD_SKILLS_DIR"
+run mkdir -p "$BUILD_SKILLS_DIR"
 
-path = sys.argv[1]
-target_root = sys.argv[2]
-with open(path, 'r') as f:
-    content = f.read()
+process_skill_source "$LOCAL_SHARED_SKILLS" "$BUILD_SKILLS_DIR"
 
-start_marker = '<!-- SKILLS_TABLE_START -->'
-end_marker = '<!-- SKILLS_TABLE_END -->'
-
-first_start = content.find(start_marker)
-last_end = content.rfind(end_marker)
-
-if first_start != -1 and last_end != -1 and last_end > first_start:
-    prefix = content[:first_start + len(start_marker)]
-    inner = content[first_start + len(start_marker):last_end]
-    suffix = content[last_end:]
-
-    # Clean inner markers to prevent nesting if openskills inserted them
-    inner = inner.replace(start_marker, '').replace(end_marker, '')
-
-    output = []
-
-    # 1. Extract Usage using Regex (robust against nested <tags> in backticks)
-    usage_match = re.search(r'<usage>(.*?)</usage>', inner, re.DOTALL)
-    if usage_match:
-        usage_text = usage_match.group(1).strip()
-        output.append('### Usage')
-        output.append(usage_text + '\n')
-
-    # 2. Extract Skills using Regex
-    skill_pattern = re.compile(r'<skill>\s*<name>(.*?)</name>\s*<description>(.*?)</description>.*?</skill>', re.DOTALL)
-    skills = skill_pattern.findall(inner)
-
-    if skills:
-        output.append('### Available Skills\n')
-        output.append('| Name | Description | Location |')
-        output.append('| :--- | :--- | :--- |')
-        for name, desc in skills:
-            name = name.strip()
-            # Clean up description: strip, remove newlines, remove quotes if present
-            desc = desc.strip().replace('\n', ' ')
-            if desc.startswith('\"') and desc.endswith('\"'):
-                desc = desc[1:-1].strip()
-
-            # Location in AGENTS.md should be absolute path for Gemini CLI native integration
-            loc = f'{target_root}/.gemini/skills/{name}/SKILL.md'
-            output.append(f'| {name} | {desc} | {loc} |')
-
-    new_inner = '\n\n' + '\n'.join(output) + '\n\n'
-    new_content = prefix + new_inner + suffix
-
-    with open(path, 'w') as f:
-        f.write(new_content)
-" "$AGENTS_MD" "$TARGET_ROOT"
-
-# 6. Deploy to Home
-echo "Deploying to $TARGET_ROOT/.agent/skills/..."
-mkdir -p "$TARGET_ROOT/.agent/skills"
-rsync -aKq --delete "$BUILD_DIR/" "$TARGET_ROOT/.agent/skills/"
-
-# 7. Agent-Specific Deployment (Overrides & Legacy)
 for agent in gemini claude; do
-    log "Deploying for $agent..."
-    mkdir -p "$TARGET_ROOT/.$agent"
-
-    # 7.1 Link Universal Prompt
-    agent_upper=$(echo "$agent" | tr '[:lower:]' '[:upper:]')
-    ln -sf "$(pwd)/$AGENTS_MD" "$TARGET_ROOT/.$agent/${agent_upper}.md"
-
-    # 7.2 Sync agent-specific files (overrides)
-    if [ -d "$AGENTS_DIR/$agent" ]; then
-        # Exclude 'skills' from general rsync as we handle it specifically
-        rsync -aKq --exclude ".git" --exclude "skills" "$AGENTS_DIR/$agent/" "$TARGET_ROOT/.$agent/"
-
-        # 7.3 Agent-Specific Skills (Overrides)
-        if [ -d "$AGENTS_DIR/$agent/skills" ]; then
-            log "  Processing agent-specific skills for $agent..."
-            # Create a temp dir for this agent's processed skills
-            AGENT_BUILD_DIR=".build/skills_$agent"
-            mkdir -p "$AGENT_BUILD_DIR"
-            process_skill_dir "$AGENTS_DIR/$agent/skills" "$AGENT_BUILD_DIR"
-
-            # Sync to home (overwriting shared ones if name matches)
-            rsync -aKq "$AGENT_BUILD_DIR/" "$TARGET_ROOT/.agent/skills/"
-            rm -rf "$AGENT_BUILD_DIR"
-        fi
-    fi
-
-    # 7.4 Maintain Legacy Symlinks & Antigravity Support
-    log "  Maintaining legacy symlinks & Antigravity support for $agent..."
-    mkdir -p "$TARGET_ROOT/.$agent/skills"
-
-    # Antigravity support for Gemini
-    if [ "$agent" == "gemini" ]; then
-        log "  Setting up Antigravity skills for Gemini..."
-        mkdir -p "$TARGET_ROOT/.$agent/antigravity"
-        rm -rf "$TARGET_ROOT/.$agent/antigravity/skills"
-        ln -sf "$TARGET_ROOT/.agent/skills" "$TARGET_ROOT/.$agent/antigravity/skills"
-    fi
-
-    find "$TARGET_ROOT/.agent/skills" -maxdepth 1 -mindepth 1 -type d | while read skill_path; do
-        skill_name=$(basename "$skill_path")
-
-        # Clean up existing to avoid nesting
-        rm -rf "$TARGET_ROOT/.$agent/skills/$skill_name"
-        ln -sf "$skill_path" "$TARGET_ROOT/.$agent/skills/$skill_name"
-
-        if [ "$agent" == "gemini" ]; then
-            rm -f "$TARGET_ROOT/.$agent/$skill_name.md"
-            ln -sf "$skill_path/SKILL.md" "$TARGET_ROOT/.$agent/$skill_name.md"
-        else
-            rm -f "$TARGET_ROOT/.$agent/$skill_name.xml"
-            ln -sf "$skill_path/SKILL.md" "$TARGET_ROOT/.$agent/$skill_name.xml"
-        fi
-    done
+    process_skill_source "$AGENTS_DIR/$agent/local-skills" "$BUILD_SKILLS_DIR"
 done
 
-# 8. OpenCode Support
-OPENCODE_CONFIG="$TARGET_ROOT/.config/opencode"
-if [ -d "$OPENCODE_CONFIG" ] || [ -d "$TARGET_ROOT/.openclaw" ]; then
-    log "Deploying for opencode..."
-    mkdir -p "$OPENCODE_CONFIG/skills"
+render_agents_prompt
 
-    find "$TARGET_ROOT/.agent/skills" -maxdepth 1 -mindepth 1 -type d | while read skill_path; do
-        skill_name=$(basename "$skill_path")
+run mkdir -p "$TARGET_ROOT/.agent"
+reset_dir "$TARGET_ROOT/.agent/skills"
+run rsync -a "$BUILD_SKILLS_DIR/" "$TARGET_ROOT/.agent/skills/"
 
-        rm -rf "$OPENCODE_CONFIG/skills/$skill_name"
-        ln -sf "$skill_path" "$OPENCODE_CONFIG/skills/$skill_name"
-    done
-
-    echo "OpenCode skills linked to $OPENCODE_CONFIG/skills/"
-fi
-
-# 9. Codex Support
-# Support both documented user-scope (~/.agents/skills) and legacy/current Codex path (~/.codex/skills).
-CODEX_DIR="$TARGET_ROOT/.codex"
-CODEX_USER_SKILLS_DIR="$TARGET_ROOT/.agents/skills"
-CODEX_HOME_SKILLS_DIR="$CODEX_DIR/skills"
-mkdir -p "$CODEX_USER_SKILLS_DIR" "$CODEX_HOME_SKILLS_DIR" "$CODEX_DIR"
-
-find "$TARGET_ROOT/.agent/skills" -maxdepth 1 -mindepth 1 -type d | while read skill_path; do
-    skill_name=$(basename "$skill_path")
-
-    rm -rf "$CODEX_USER_SKILLS_DIR/$skill_name"
-    ln -sf "$skill_path" "$CODEX_USER_SKILLS_DIR/$skill_name"
-
-    # Keep ~/.codex/skills in sync for Codex builds that still read from CODEX_HOME.
-    rm -rf "$CODEX_HOME_SKILLS_DIR/$skill_name"
-    ln -sf "$skill_path" "$CODEX_HOME_SKILLS_DIR/$skill_name"
+for agent in gemini claude; do
+    run mkdir -p "$TARGET_ROOT/.$agent"
 done
 
-echo "Codex skills linked to $CODEX_USER_SKILLS_DIR/ and $CODEX_HOME_SKILLS_DIR/"
-log "Linking global AGENTS.md for codex..."
-ln -sf "$(pwd)/$AGENTS_MD" "$CODEX_DIR/AGENTS.md"
+link_path "$AGENTS_MD" "$TARGET_ROOT/.claude/CLAUDE.md"
+link_path "$AGENTS_MD" "$TARGET_ROOT/.gemini/GEMINI.md"
 
-# Cleanup local build if it's not in temp
-if [[ "$BUILD_DIR" == .build* ]]; then
-    rm -rf .build
+sync_claude_commands
+sync_gemini_commands
+
+reset_dir "$TARGET_ROOT/.claude/rules"
+link_path "$AGENTS_MD" "$TARGET_ROOT/.codex/AGENTS.md"
+clean_legacy_skill_links
+
+sync_agent_overrides "gemini"
+sync_agent_overrides "claude"
+
+if [[ "$BUILD_ROOT" == "$PROJECT_ROOT/.build" ]] && [ "$DRY_RUN" = false ]; then
+    run rm -rf "$BUILD_ROOT"
 fi
 
 echo "---"
-echo "Sync complete. All skills unified in shared/skills and agents/*/skills."
-echo "Index location: $AGENTS_MD"
-echo "Skill store: $TARGET_ROOT/.agent/skills/"
-echo "OpenCode: $TARGET_ROOT/.config/opencode/skills/"
-echo "Codex skills: $TARGET_ROOT/.agents/skills/"
-echo "Codex home skills: $TARGET_ROOT/.codex/skills/"
-echo "Codex AGENTS: $TARGET_ROOT/.codex/AGENTS.md"
+echo "Sync complete."
+echo "Canonical prompt: $AGENTS_MD"
+echo "Canonical skills: $TARGET_ROOT/.agent/skills"

@@ -1,115 +1,72 @@
 # .awesome-agent
 
-A centralized, DRY (Don't Repeat Yourself), and automated configuration manager for AI agents (Gemini CLI, Claude Code, Codex).
+A repo-managed prompt and local-skill layer for Gemini CLI, Claude Code, and Codex.
 
-## Core Philosophy
+## Core Model
 
-- **Single Source of Truth**: Define your persona and coding standards once in `shared/core_profile.md`.
-- **Layered Overrides**: Generic skills live in `shared/`, while agent-specific tweaks live in `agents/`.
-- **Standardized Skills**: Powered by the [OpenSkills](https://github.com/openskills/openskills) specification.
-- **Automated Sync**: One command to build and deploy your entire agent environment.
-
----
+- `skills.sh` is the source of truth for non-local skills.
+- This repo stores only local custom skills and agent prompt/config glue.
+- `meta/sync.sh` syncs the unified prompt plus local custom skills.
+- `meta/install-remote-skills.sh` installs remote skill repos with `npx skills add`.
 
 ## Repository Structure
 
-### `shared/` - The Universal Core
-- **`shared/core_profile.md`**: Your global persona, coding standards, and operational protocols.
-- **`shared/skills/`**: Cross-agent skills. Supports both directory-based skills (with `rules/` subfolders) and flat `.md` files (automatically transformed during sync).
-- **`shared/AGENTS.md`**: The generated "Universal Prompt" that includes your profile and an indexed table of available skills.
+### `shared/`
+- `shared/core_profile.md`: Canonical persona and operating rules.
+- `shared/skill_system.md`: `skills.sh` usage policy.
+- `shared/AGENTS.md`: Generated unified prompt for Claude, Gemini, and Codex.
+- `shared/local-skills/`: Repo-local custom skills only.
+- `shared/remote-skills.txt`: Remote skill repos that should be installed via `skills.sh`.
 
-### `agents/` - Agent Overrides
-- **`agents/gemini/`**: Overrides for Gemini CLI.
-  - `extensions/`: Gemini-specific extensions.
-  - `skills/`: Gemini-only skills or overrides for shared skills.
-- **`agents/claude/`**: Overrides for Claude Code.
-  - `plugins/`: Claude-specific plugins.
-  - `commands/`: Custom Claude slash commands.
+### `agents/`
+- `agents/gemini/local-skills/`: Gemini-only local custom skills.
+- `agents/claude/commands/`: Claude slash commands managed by this repo.
+- Other agent-specific files are linked into the target home config as top-level overrides.
 
-### `meta/` - Automation & Infrastructure
-- **`meta/sync.sh`**: The brain of the project. It builds the skill library, stitches modular rules, merges profiles, and symlinks everything to your home directory.
-- **`meta/add-skill.sh`**: Utility to vendor external skills from GitHub into the project.
+### `meta/`
+- `meta/sync.sh`: Builds local skills, renders `shared/AGENTS.md`, cleans foreign Claude links, and syncs repo-managed config.
+- `meta/install-remote-skills.sh`: Installs remote skill repos listed in `shared/remote-skills.txt`.
 
-### `external/` - Third-party Dependencies
-- Contains vendored components like `superpowers` that are integrated into the system but maintained separately.
+## Usage
 
----
-
-## Getting Started
-
-### 1. Prerequisites
-- Node.js (for `npx openskills`)
-- `rsync` and `sed` (standard on macOS/Linux)
-
-### 2. Synchronize
-To deploy your configuration to `~/.gemini`, `~/.claude`, `~/.codex`, `~/.agents`, and `~/.agent`:
+### Sync repo-managed config
 
 ```bash
 ./meta/sync.sh --verbose --yes
 ```
 
-**Flags:**
-- `-v, --verbose`: Show detailed build and sync logs.
-- `-y, --yes`: Auto-confirm the OpenSkills index update.
-- `-c, --clean`: (Optional) Remove broken symlinks in home directories.
+Flags:
+- `-v`, `--verbose`: print sync steps
+- `-c`, `--clean`: remove broken links and stale repo-managed skill links
+- `-d`, `--dry-run`: show intended filesystem actions without writing
+- `-y`, `--yes`: non-interactive mode
 
----
+### Install remote skills from `skills.sh`
 
-## The Skill System
+```bash
+./meta/install-remote-skills.sh
+```
 
-The project uses a hybrid skill system that adapts to your needs.
+Dry run:
 
-### 1. Directory Skills
-Create a folder in `shared/skills/<name>/`.
-- Must contain a `SKILL.md`.
-- Can contain a `rules/` folder. All `.md` files in `rules/` will be appended to `SKILL.md` automatically during sync.
+```bash
+./meta/install-remote-skills.sh --dry-run
+```
 
-### 2. Flat Skills
-Simply drop a `<name>.md` file into `shared/skills/`. The sync script will transform it into a compliant `shared/skills/<name>/SKILL.md` structure in your home directory.
+### Add a new local skill
 
-### 3. Vendored Skills
-Skills from external sources (like Superpowers) are prefixed with their source name (e.g., `superpowers-brainstorming`) to avoid collisions.
+Put it in `shared/local-skills/<name>/SKILL.md` or `shared/local-skills/<name>.md`.
 
----
+### Add a new remote skill repo
 
-## Deployment Mechanics
+Add the repo to `shared/remote-skills.txt` and install it with `meta/install-remote-skills.sh`.
 
-When you run `./meta/sync.sh`, the following happens:
+## Behavior
 
-1. **Build Phase**:
-   - Shared skills are collected.
-   - Modular rules are stitched.
-   - Flat files are converted to directory-based skills.
-   - Agent-specific skills are layered on top (overwriting shared ones with the same name).
-2. **Profile Merge**:
-   - `shared/core_profile.md` is prepended to `shared/AGENTS.md`.
-   - `npx openskills sync` updates the "Available Skills" index in `AGENTS.md`.
-3. **Link Phase**:
-   - All processed skills are rsync'd to `~/.agent/skills/`.
-   - `~/.gemini/GEMINI.md` and `~/.claude/CLAUDE.md` are symlinked to `shared/AGENTS.md`.
-   - Legacy symlinks are created in `~/.gemini/skills/` and `~/.claude/skills/` for backward compatibility.
-   - Codex user skills are symlinked to `~/.agents/skills/`.
-   - If Codex is installed (`~/.codex` exists), `~/.codex/AGENTS.md` is symlinked to `shared/AGENTS.md`.
+Running `meta/sync.sh`:
 
----
-
-## Customizing your Persona
-
-Edit **`shared/core_profile.md`**. This file is the "brain" of your agent. It defines how the agent thinks, communicates, and codes. Because it's merged into `AGENTS.md`, both Gemini and Claude will inherit these traits instantly after a sync.
-
----
-
-## Ralph Commander
-
-A built-in Web UI to visualize, orchestrate, and control autonomous AI agent loops (Ralph Wiggum methodology).
-
-### Features
-- **Planning First**: Automatically elaborates prompts into technical specs and implementation plans.
-- **Dual Engine**: Support for both Gemini CLI and Claude Code.
-- **Real-time Telemetry**: Live log streaming and token/tool usage statistics.
-- **Visual Control**: Stop, clear logs, and track task progress via a modern dashboard.
-
-### Accessing the Dashboard
-1. Enter the commander directory: `cd ralph-commander`
-2. Start the server: `bun run dev`
-3. Visit **http://localhost:3000** in your browser.
+1. Renders `shared/AGENTS.md` from `shared/core_profile.md` plus `shared/skill_system.md`.
+2. Normalizes local skills into the canonical local store at `~/.agent/skills`.
+3. Links `~/.claude/CLAUDE.md`, `~/.gemini/GEMINI.md`, and `~/.codex/AGENTS.md` to the same prompt file.
+4. Replaces foreign `~/.claude/commands` and `~/.claude/rules` links so project-specific junk does not bleed into the global setup.
+5. Leaves agent skill directories alone so `npx skills add` can manage remote skills without this repo overwriting them.

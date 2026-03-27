@@ -1,0 +1,10 @@
+vercel-labs/skills|find-skills
+anthropics/skills|frontend-design
+obra/superpowers|using-superpowers
+vercel-labs/agent-browser|agent-browser
+nextlevelbuilder/ui-ux-pro-max-skill|ui-ux-pro-max
+vercel-labs/agent-browser|dogfood
+google-labs-code/stitch-skills|stitch-design
+vercel-labs/agent-skills
+obra/superpowers
+elysiajs/skills

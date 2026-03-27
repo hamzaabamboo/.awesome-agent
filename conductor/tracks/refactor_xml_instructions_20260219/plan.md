@@ -2,7 +2,7 @@
 
 ## Phase 1: Research & Preparation
 - [x] Research current XML usage in `AGENTS.md` and `sync.sh`.
-- [x] Verify `openskills sync` output (confirmed to be XML).
+- [x] Verify the old XML-based sync output from the deprecated pre-skills.sh flow.
 
 ## Phase 2: Implementation
 - [x] Update `meta/sync.sh`:

@@ -1,7 +1,5 @@
 #!/bin/bash
 
-# tests/test_sync_args.sh - Basic tests for sync.sh argument parsing
-
 set -e
 
 SYNC_SCRIPT="./meta/sync.sh"
@@ -12,7 +10,7 @@ test_flag() {
     local flag=$1
     local expected_output=$2
     echo "Testing flag: $flag"
-    output=$($SYNC_SCRIPT "$flag")
+    output=$($SYNC_SCRIPT "$flag" --yes)
     if [[ "$output" == *"$expected_output"* ]]; then
         echo "PASS"
     else

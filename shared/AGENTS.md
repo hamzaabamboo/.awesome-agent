@@ -91,56 +91,13 @@ This repository is a **Centralized AI Agent Configuration Manager**. It aims to 
 -   **Backup Policy:** The sync engine automatically backs up existing regular files to `~/.agent_config_backups/` before replacing them with symlinks.
 
 # SKILLS SYSTEM
-<!-- Skills section removed -->
 
-<skills_system priority="1">
+Use `skills.sh` as the source of truth for non-local skills.
 
-## Available Skills
+## Usage
 
-<!-- SKILLS_TABLE_START -->
-
-### Usage
-When users ask you to perform tasks, check if any of the available skills below can help complete the task more effectively. Skills provide specialized capabilities and domain knowledge.
-
-How to use skills:
-- Invoke: `npx openskills read <skill-name>` (run in your shell)
-  - For multiple: `npx openskills read skill-one,skill-two`
-- The skill content will load with detailed instructions on how to complete the task
-- Base directory provided in output for resolving bundled resources (references/, scripts/, assets/)
-
-Usage notes:
-- Only use skills listed in <available_skills> below
-- Do not invoke a skill that is already loaded in your context
-- Each skill invocation is stateless
-
-### Available Skills
-
-| Name | Description | Location |
-| :--- | :--- | :--- |
-| agent-browser | Automates browser interactions for web testing, form filling, screenshots, and data extraction. Use when the user needs to navigate websites, interact with web pages, fill forms, take screenshots, test web applications, or extract information from web pages. | /Users/vittayapalotai.tanyawat/.gemini/skills/agent-browser/SKILL.md |
-| ark-ui-react | Component-specific guidelines and best practices for Ark UI with React. | /Users/vittayapalotai.tanyawat/.gemini/skills/ark-ui-react/SKILL.md |
-| common | Common utilities and shared knowledge for all agents. | /Users/vittayapalotai.tanyawat/.gemini/skills/common/SKILL.md |
-| elysiajs | Expert knowledge for building type-safe, high-performance backend servers with ElysiaJS. | /Users/vittayapalotai.tanyawat/.gemini/skills/elysiajs/SKILL.md |
-| panda-css | Full documentation and best practices for Panda CSS. | /Users/vittayapalotai.tanyawat/.gemini/skills/panda-css/SKILL.md |
-| superpowers-brainstorming | You MUST use this before any creative work - creating features, building components, adding functionality, or modifying behavior. Explores user intent, requirements and design before implementation. | /Users/vittayapalotai.tanyawat/.gemini/skills/superpowers-brainstorming/SKILL.md |
-| superpowers-dispatching-parallel-agents | Use when facing 2+ independent tasks that can be worked on without shared state or sequential dependencies | /Users/vittayapalotai.tanyawat/.gemini/skills/superpowers-dispatching-parallel-agents/SKILL.md |
-| superpowers-executing-plans | Use when you have a written implementation plan to execute in a separate session with review checkpoints | /Users/vittayapalotai.tanyawat/.gemini/skills/superpowers-executing-plans/SKILL.md |
-| superpowers-finishing-a-development-branch | Use when implementation is complete, all tests pass, and you need to decide how to integrate the work - guides completion of development work by presenting structured options for merge, PR, or cleanup | /Users/vittayapalotai.tanyawat/.gemini/skills/superpowers-finishing-a-development-branch/SKILL.md |
-| superpowers-receiving-code-review | Use when receiving code review feedback, before implementing suggestions, especially if feedback seems unclear or technically questionable - requires technical rigor and verification, not performative agreement or blind implementation | /Users/vittayapalotai.tanyawat/.gemini/skills/superpowers-receiving-code-review/SKILL.md |
-| superpowers-requesting-code-review | Use when completing tasks, implementing major features, or before merging to verify work meets requirements | /Users/vittayapalotai.tanyawat/.gemini/skills/superpowers-requesting-code-review/SKILL.md |
-| superpowers-subagent-driven-development | Use when executing implementation plans with independent tasks in the current session | /Users/vittayapalotai.tanyawat/.gemini/skills/superpowers-subagent-driven-development/SKILL.md |
-| superpowers-systematic-debugging | Use when encountering any bug, test failure, or unexpected behavior, before proposing fixes | /Users/vittayapalotai.tanyawat/.gemini/skills/superpowers-systematic-debugging/SKILL.md |
-| superpowers-test-driven-development | Use when implementing any feature or bugfix, before writing implementation code | /Users/vittayapalotai.tanyawat/.gemini/skills/superpowers-test-driven-development/SKILL.md |
-| superpowers-using-git-worktrees | Use when starting feature work that needs isolation from current workspace or before executing implementation plans - creates isolated git worktrees with smart directory selection and safety verification | /Users/vittayapalotai.tanyawat/.gemini/skills/superpowers-using-git-worktrees/SKILL.md |
-| superpowers-using-superpowers | Use when starting any conversation - establishes how to find and use skills, requiring Skill tool invocation before ANY response including clarifying questions | /Users/vittayapalotai.tanyawat/.gemini/skills/superpowers-using-superpowers/SKILL.md |
-| superpowers-verification-before-completion | Use when about to claim work is complete, fixed, or passing, before committing or creating PRs - requires running verification commands and confirming output before making any success claims; evidence before assertions always | /Users/vittayapalotai.tanyawat/.gemini/skills/superpowers-verification-before-completion/SKILL.md |
-| superpowers-writing-plans | Use when you have a spec or requirements for a multi-step task, before touching code | /Users/vittayapalotai.tanyawat/.gemini/skills/superpowers-writing-plans/SKILL.md |
-| superpowers-writing-skills | Use when creating new skills, editing existing skills, or verifying skills work before deployment | /Users/vittayapalotai.tanyawat/.gemini/skills/superpowers-writing-skills/SKILL.md |
-| test_skill | Basic test skill used for sync validation and smoke testing. | /Users/vittayapalotai.tanyawat/.gemini/skills/test_skill/SKILL.md |
-| vercel-react-best-practices | React and Next.js performance optimization guidelines from Vercel Engineering. This skill should be used when writing, reviewing, or refactoring React/Next.js code to ensure optimal performance patterns. Triggers on tasks involving React components, Next.js pages, data fetching, bundle optimization, or performance improvements. | /Users/vittayapalotai.tanyawat/.gemini/skills/vercel-react-best-practices/SKILL.md |
-| web-design-guidelines | Review UI code for Web Interface Guidelines compliance. Use when asked to "review my UI", "check accessibility", "audit design", "review UX", or "check my site against best practices". | /Users/vittayapalotai.tanyawat/.gemini/skills/web-design-guidelines/SKILL.md |
-| common-gemini |  | /Users/vittayapalotai.tanyawat/.gemini/skills/common-gemini/SKILL.md |
-
-<!-- SKILLS_TABLE_END -->
-
-</skills_system>
+- Discover remote skills at `https://skills.sh/`
+- Install remote skill repos with `npx skills add <owner/repo>`
+- Use repo-local custom skills directly from this repo-managed setup
+- This repo should only store local custom skills and local skill tests
+- Do not vendor or copy skills that already live on `skills.sh`

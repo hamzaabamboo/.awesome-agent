@@ -1,55 +1,45 @@
 #!/bin/bash
 
-# tests/test_transform.sh - Tests for transformation logic
-
 set -e
 
 SYNC_SCRIPT="./meta/sync.sh"
-BUILD_DIR="./build"
-SHARED_DIR="./shared/skills"
+HOME_MOCK="$(pwd)/tests/mock_home"
+SHARED_DIR="./shared/local-skills"
 
-# Setup
+rm -rf "$HOME_MOCK"
 mkdir -p "$SHARED_DIR"
-echo "# Test Skill" > "$SHARED_DIR/test_skill.md"
+cat <<'EOF' > "$SHARED_DIR/test_sync_flat.md"
+---
+name: wrong-name
+description: Flat skill for sync test.
+---
 
-# Test Gemini Transformation (Directory Structure)
-test_gemini_transform() {
-    echo "Testing Gemini transformation..."
-    $SYNC_SCRIPT --verbose
-    
-    if [ -f "$BUILD_DIR/gemini/skills/test_skill/SKILL.md" ]; then
-        echo "PASS: Gemini file created in directory structure"
-    else
-        echo "FAIL: Gemini file not created"
-        ls -R "$BUILD_DIR/gemini"
+Flat skill body.
+EOF
+
+test_transform() {
+    echo "Testing skill normalization..."
+
+    export TARGET_ROOT="$HOME_MOCK"
+
+    $SYNC_SCRIPT --yes
+
+    if [ ! -f "$HOME_MOCK/.agent/skills/test_sync_flat/SKILL.md" ]; then
+        echo "FAIL: Canonical skill file not created"
+        exit 1
+    fi
+
+    if ! grep -q "^name: test_sync_flat$" "$HOME_MOCK/.agent/skills/test_sync_flat/SKILL.md"; then
+        echo "FAIL: Skill frontmatter name was not normalized"
+        exit 1
+    fi
+
+    if [ -e "$HOME_MOCK/.claude/skills" ] || [ -e "$HOME_MOCK/.gemini/skills" ]; then
+        echo "FAIL: Sync should not manage agent skill directories anymore"
         exit 1
     fi
 }
 
-# Test Claude Transformation (Directory Structure, No XML)
-test_claude_transform() {
-    echo "Testing Claude transformation..."
-    $SYNC_SCRIPT --verbose
-    
-    if [ -f "$BUILD_DIR/claude/skills/test_skill/SKILL.md" ]; then
-        echo "PASS: Claude file created in directory structure"
-        # Check content to ensure no XML wrapping (simple check if it starts with # Test Skill)
-        if grep -q "# Test Skill" "$BUILD_DIR/claude/skills/test_skill/SKILL.md"; then
-             echo "PASS: Claude file content is correct (Markdown)"
-        else
-             echo "FAIL: Claude file content is incorrect"
-             cat "$BUILD_DIR/claude/skills/test_skill/SKILL.md"
-             exit 1
-        fi
-    else
-        echo "FAIL: Claude file not created"
-        ls -R "$BUILD_DIR/claude"
-        exit 1
-    fi
-}
-
-# Run tests
-test_gemini_transform
-test_claude_transform
+test_transform
 
 echo "Transformation tests passed"
