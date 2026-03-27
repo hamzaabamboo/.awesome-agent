@@ -1,5 +1,6 @@
 vercel-labs/skills|find-skills
 anthropics/skills|frontend-design
+anthropics/skills|skill-creator
 obra/superpowers|using-superpowers
 vercel-labs/agent-browser|agent-browser
 nextlevelbuilder/ui-ux-pro-max-skill|ui-ux-pro-max
