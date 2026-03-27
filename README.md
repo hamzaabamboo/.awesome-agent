@@ -5,7 +5,7 @@ A repo-managed prompt and local-skill layer for Gemini CLI, Claude Code, and Cod
 ## Core Model
 
 - `skills.sh` is the source of truth for non-local skills.
-- This repo stores only local custom skills and agent prompt/config glue.
+- This repo stores only shared local custom skills plus the unified prompt/config glue.
 - `meta/sync.sh` syncs the unified prompt plus local custom skills.
 - `meta/install-remote-skills.sh` installs remote skill repos with `npx skills add`.
 
@@ -18,13 +18,8 @@ A repo-managed prompt and local-skill layer for Gemini CLI, Claude Code, and Cod
 - `shared/local-skills/`: Repo-local custom skills only.
 - `shared/remote-skills.txt`: Remote skill repos that should be installed via `skills.sh`.
 
-### `agents/`
-- `agents/gemini/local-skills/`: Gemini-only local custom skills.
-- `agents/claude/commands/`: Claude slash commands managed by this repo.
-- Other agent-specific files are linked into the target home config as top-level overrides.
-
 ### `meta/`
-- `meta/sync.sh`: Builds local skills, renders `shared/AGENTS.md`, cleans foreign Claude links, and syncs repo-managed config.
+- `meta/sync.sh`: Builds local skills, renders `shared/AGENTS.md`, cleans foreign Claude links, and syncs only the repo-managed shared prompt/skill layer.
 - `meta/install-remote-skills.sh`: Installs remote skill repos listed in `shared/remote-skills.txt`.
 
 ## Usage

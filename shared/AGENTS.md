@@ -66,14 +66,13 @@ This repository is a **Centralized AI Agent Configuration Manager**. It aims to 
 
 ## Philosophy & Core Principles
 1.  **Single Source of Truth:** All configurations (Markdown profiles, skill instructions, agent-specific overrides) reside in this repository.
-2.  **Infrastructure as Code:** Agent environments are deployed and updated via the `sync.sh` engine. Manual changes to `~/.gemini` or `~/.claude` should be avoided; they should be mirrored back to `agents/` and deployed via the script.
+2.  **Infrastructure as Code:** Agent environments are deployed and updated via the `sync.sh` engine. Manual changes to `~/.gemini` or `~/.claude` should be avoided; repo-managed source lives under `shared/`.
 3.  **Cross-Agent Compatibility:** Shared assets (like `core_profile.md` and `shared/skills/`) are automatically transformed into the agent-specific formats and structures required (e.g., directory-based skills for both, Markdown everywhere).
 4.  **DRY (Don't Repeat Yourself):** Common skills and profile instructions are shared between agents via symlinking and build-time transformations.
 5.  **Strict Hygiene:** The sync engine must strictly ignore project internals (like `.git` and `.DS_Store`) to prevent polluting the agent's global configuration directories.
 
 ## Project Structure
 -   `shared/`: Common assets. `core_profile.md` is the primary persona definition. `skills/` contains flat Markdown skills.
--   `agents/`: Agent-specific overrides. Mapped to `$HOME/.[agent_name]/`.
 -   `external/`: Git submodules or cloned repos (e.g., `superpowers`).
 -   `build/`: Intermediate directory where skills are transformed into the required directory structure (`skills/<name>/SKILL.md`).
 -   `meta/sync.sh`: The core executable. Handles transformation and symlinking.

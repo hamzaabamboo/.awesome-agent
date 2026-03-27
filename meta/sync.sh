@@ -5,7 +5,6 @@ set -euo pipefail
 TARGET_ROOT="${TARGET_ROOT:-$HOME}"
 PROJECT_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 LOCAL_SHARED_SKILLS="$PROJECT_ROOT/shared/local-skills"
-AGENTS_DIR="$PROJECT_ROOT/agents"
 CORE_PROFILE="$PROJECT_ROOT/shared/core_profile.md"
 SKILL_SYSTEM="$PROJECT_ROOT/shared/skill_system.md"
 AGENTS_MD="$PROJECT_ROOT/shared/AGENTS.md"
@@ -269,18 +268,6 @@ render_agents_prompt() {
 sync_claude_commands() {
     local claude_dir="$TARGET_ROOT/.claude"
     reset_dir "$claude_dir/commands"
-
-    for source_dir in "$PROJECT_ROOT/shared/commands" "$PROJECT_ROOT/agents/claude/commands"; do
-        if [ ! -d "$source_dir" ]; then
-            continue
-        fi
-
-        find "$source_dir" -maxdepth 1 -type f -name '*.md' | sort | while read -r cmd_path; do
-            local cmd_name
-            cmd_name="$(basename "$cmd_path")"
-            link_path "$cmd_path" "$claude_dir/commands/$cmd_name"
-        done
-    done
 }
 
 sync_gemini_commands() {
@@ -327,25 +314,6 @@ PY
     done
 }
 
-sync_agent_overrides() {
-    local agent="$1"
-    local source_dir="$AGENTS_DIR/$agent"
-    local target_dir="$TARGET_ROOT/.$agent"
-
-    if [ ! -d "$source_dir" ]; then
-        return 0
-    fi
-
-    find "$source_dir" -mindepth 1 -maxdepth 1 | sort | while read -r entry; do
-        local name
-        name="$(basename "$entry")"
-        if [ "$name" = "skills" ] || [ "$name" = "local-skills" ] || [ "$name" = "commands" ]; then
-            continue
-        fi
-        link_path "$entry" "$target_dir/$name"
-    done
-}
-
 echo "Standardizing skills..."
 
 if [ "$YES" = false ]; then
@@ -363,10 +331,6 @@ run rm -rf "$BUILD_SKILLS_DIR"
 run mkdir -p "$BUILD_SKILLS_DIR"
 
 process_skill_source "$LOCAL_SHARED_SKILLS" "$BUILD_SKILLS_DIR"
-
-for agent in gemini claude; do
-    process_skill_source "$AGENTS_DIR/$agent/local-skills" "$BUILD_SKILLS_DIR"
-done
 
 render_agents_prompt
 
@@ -387,9 +351,6 @@ sync_gemini_commands
 reset_dir "$TARGET_ROOT/.claude/rules"
 link_path "$AGENTS_MD" "$TARGET_ROOT/.codex/AGENTS.md"
 clean_legacy_skill_links
-
-sync_agent_overrides "gemini"
-sync_agent_overrides "claude"
 
 if [[ "$BUILD_ROOT" == "$PROJECT_ROOT/.build" ]] && [ "$DRY_RUN" = false ]; then
     run rm -rf "$BUILD_ROOT"
