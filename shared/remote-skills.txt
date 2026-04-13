@@ -9,3 +9,5 @@ google-labs-code/stitch-skills|stitch-design
 vercel-labs/agent-skills
 obra/superpowers
 elysiajs/skills
+forrestchang/andrej-karpathy-skills
+Astro-Han/karpathy-llm-wiki
