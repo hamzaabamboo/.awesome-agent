@@ -7,6 +7,6 @@
 - [x] Task: Conductor - User Manual Verification 'Phase 1: Engine Refactoring' (Protocol in workflow.md)
 
 ## Phase 2: Cleanup & Sync
-- [x] Task: Manually clean up old flat symlinks in `~/.gemini/skills` and `~/.claude/skills` (or use `sync.sh --clean` if reliable)
+- [x] Task: Manually clean up old flat per-agent skill symlinks (or use `sync.sh --clean` if reliable)
 - [x] Task: Run `meta/sync.sh --verbose --yes` to deploy new structure
 - [x] Task: Conductor - User Manual Verification 'Phase 2: Cleanup & Sync' (Protocol in workflow.md)

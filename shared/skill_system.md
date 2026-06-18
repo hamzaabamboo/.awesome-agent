@@ -10,3 +10,5 @@ Use `skills.sh` as the source of truth for non-local skills.
 - Use repo-local custom skills directly from this repo-managed setup
 - This repo should only store local custom skills and local skill tests
 - Do not vendor or copy skills that already live on `skills.sh`
+- Local custom skill source must live under `shared/local-skills/`
+- Generated local skill targets must stay inside this repo, with external agent paths symlinked back here instead of copied into `~/.agent`, `~/.agents`, `~/.codex`, `~/.claude`, or `~/.gemini`

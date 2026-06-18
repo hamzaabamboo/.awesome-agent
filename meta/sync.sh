@@ -4,10 +4,10 @@ set -euo pipefail
 
 TARGET_ROOT="${TARGET_ROOT:-$HOME}"
 PROJECT_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-LOCAL_SHARED_SKILLS="$PROJECT_ROOT/shared/local-skills"
+LOCAL_SHARED_SKILLS="${LOCAL_SHARED_SKILLS:-$PROJECT_ROOT/shared/local-skills}"
 CORE_PROFILE="$PROJECT_ROOT/shared/core_profile.md"
 SKILL_SYSTEM="$PROJECT_ROOT/shared/skill_system.md"
-AGENTS_MD="$PROJECT_ROOT/shared/AGENTS.md"
+AGENTS_MD="${AGENTS_MD:-$PROJECT_ROOT/shared/AGENTS.md}"
 REMOTE_SKILLS_INSTALLER="$PROJECT_ROOT/meta/install-remote-skills.sh"
 BUILD_ROOT="${PROJECT_TEMP_DIR:-$PROJECT_ROOT/.build}"
 BUILD_SKILLS_DIR="$BUILD_ROOT/skills"
@@ -116,7 +116,6 @@ clean_legacy_skill_links() {
         "$TARGET_ROOT/.claude/skills" \
         "$TARGET_ROOT/.gemini/skills" \
         "$TARGET_ROOT/.gemini/antigravity/skills" \
-        "$TARGET_ROOT/.agents/skills" \
         "$TARGET_ROOT/.codex/skills"
     do
         if [ -L "$path" ]; then
@@ -210,7 +209,7 @@ copy_skill_dir() {
     local skill_name
     skill_name="$(basename "$src")"
     run mkdir -p "$dest_root/$skill_name"
-    run rsync -a "$src/" "$dest_root/$skill_name/"
+    run cp -R "$src/." "$dest_root/$skill_name/"
     if [ "$DRY_RUN" = false ]; then
         normalize_skill "$dest_root/$skill_name" "$skill_name"
     fi
@@ -242,6 +241,30 @@ process_skill_source() {
         elif [[ "$entry" == *.md ]]; then
             copy_skill_file "$entry" "$dest_root"
         fi
+    done
+}
+
+sync_agents_skill_links() {
+    local agents_skills="$TARGET_ROOT/.agents/skills"
+
+    if [ -L "$agents_skills" ]; then
+        run rm -f "$agents_skills"
+    fi
+
+    run mkdir -p "$agents_skills"
+
+    find "$BUILD_SKILLS_DIR" -mindepth 1 -maxdepth 1 -type d | sort | while read -r skill_dir; do
+        local skill_name
+        local target
+        skill_name="$(basename "$skill_dir")"
+        target="$agents_skills/$skill_name"
+
+        if [ -e "$target" ] && [ ! -L "$target" ]; then
+            log "Preserving existing global skill: $target"
+            continue
+        fi
+
+        link_path "$skill_dir" "$target"
     done
 }
 
@@ -353,8 +376,9 @@ process_skill_source "$LOCAL_SHARED_SKILLS" "$BUILD_SKILLS_DIR"
 render_agents_prompt
 
 run mkdir -p "$TARGET_ROOT/.agent"
-reset_dir "$TARGET_ROOT/.agent/skills"
-run rsync -a "$BUILD_SKILLS_DIR/" "$TARGET_ROOT/.agent/skills/"
+link_path "$BUILD_SKILLS_DIR" "$TARGET_ROOT/.agent/skills"
+run mkdir -p "$TARGET_ROOT/.agents"
+sync_agents_skill_links
 
 for agent in gemini claude; do
     run mkdir -p "$TARGET_ROOT/.$agent"
@@ -371,11 +395,8 @@ link_path "$AGENTS_MD" "$TARGET_ROOT/.codex/AGENTS.md"
 clean_legacy_skill_links
 install_remote_skills
 
-if [[ "$BUILD_ROOT" == "$PROJECT_ROOT/.build" ]] && [ "$DRY_RUN" = false ]; then
-    run rm -rf "$BUILD_ROOT"
-fi
-
 echo "---"
 echo "Sync complete."
 echo "Canonical prompt: $AGENTS_MD"
 echo "Canonical skills: $TARGET_ROOT/.agent/skills"
+echo "Global skills: $TARGET_ROOT/.agents/skills"

@@ -1,23 +1,16 @@
-# Specification - Build the Core Sync Engine
+# Specification - Build the Core Sync Engine (Archived)
 
-## Goal
-Implement a robust, cross-platform (Darwin/Linux) Bash sync script that manages AI agent configurations using a DRY-compliant, pattern-based symlinking approach with an integrated transformation (compilation) step.
+## Status
 
-## Scope
-- **Directory Structure:** Setup `shared/`, `agents/`, `meta/`, and `build/`.
-- **Sync Script (`meta/sync.sh`):**
-    - **Inference Engine:** Map `agents/<agent>/*` to `~/.<agent>/*`.
-    - **Compiler:** Transform `shared/skills/*.md` into agent-specific formats in `build/`.
-        - Gemini: Native Markdown.
-        - Claude: XML-wrapped Markdown.
-    - **Symlinking:** Link files from `agents/` and `build/` to the home directory.
-    - **Safety:** Automatic backup of existing files with user confirmation.
-    - **Logging:** Verbose output of all actions.
-    - **Dry Run:** Flag to simulate actions.
-    - **Cleanup:** Interactive pruning of broken or orphaned symlinks.
+Superseded by the current `skills.sh`-based architecture.
 
-## Success Criteria
-- Running `sync.sh` correctly symlinks files to `~/.gemini/` and `~/.claudebot/`.
-- Existing files are backed up before being replaced by symlinks.
-- Shared skills are correctly transformed into agent-specific formats in the `build/` directory.
-- Script handles errors gracefully and provides clear, verbose output.
+## Current Architecture
+
+- Repo-local custom skills live under `shared/local-skills/`.
+- Remote skills live in `shared/remote-skills.txt` and install through `meta/install-remote-skills.sh`.
+- `meta/sync.sh` builds local skills into `.build/skills`.
+- `~/.agent/skills` is a symlink back to `.build/skills`.
+- `~/.agents/skills` remains a real global skill directory; repo-local skills are linked into it one by one.
+- `~/.claude/CLAUDE.md`, `~/.gemini/GEMINI.md`, and `~/.codex/AGENTS.md` are symlinks to `shared/AGENTS.md`.
+
+The earlier per-agent source mapping, XML wrapping, per-agent skill output, and backup-confirmation model is no longer active.

@@ -48,8 +48,8 @@ Add the repo to `shared/remote-skills.txt`, then run `./meta/sync.sh --yes`.
 Running `meta/sync.sh`:
 
 1. Renders `shared/AGENTS.md` from `shared/core_profile.md` plus `shared/skill_system.md`.
-2. Normalizes local skills into the canonical local store at `~/.agent/skills`.
+2. Normalizes local skills into `.build/skills`, symlinks `~/.agent/skills` to that build, and links each repo-local skill into `~/.agents/skills` without replacing global skills.
 3. Links `~/.claude/CLAUDE.md`, `~/.gemini/GEMINI.md`, and `~/.codex/AGENTS.md` to the same prompt file.
 4. Replaces `~/.claude/commands` and `~/.claude/rules` links that are not managed by this repo before syncing the shared global setup.
 5. Installs every remote skill entry from `shared/remote-skills.txt`.
-6. Leaves real skill directories alone instead of deleting them during sync.
+6. Replaces the managed prompt targets and repo-owned local skill links.

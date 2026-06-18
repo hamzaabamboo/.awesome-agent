@@ -32,7 +32,7 @@ while IFS= read -r entry <&3; do
 
     if [ "$DRY_RUN" = true ]; then
         if [ -n "$skill" ]; then
-            echo "npx skills add $repo --skill $skill --yes --global"
+            echo "npx skills add $repo --skill $skill --yes --global --full-depth"
         else
             echo "npx skills add $repo --yes --global"
         fi
@@ -40,7 +40,7 @@ while IFS= read -r entry <&3; do
     fi
 
     if [ -n "$skill" ]; then
-        npx skills add "$repo" --skill "$skill" --yes --global
+        npx skills add "$repo" --skill "$skill" --yes --global --full-depth
     else
         npx skills add "$repo" --yes --global
     fi

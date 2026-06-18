@@ -1,0 +1,4 @@
+interface:
+  display_name: "Visual Pixel Match"
+  short_description: "Screenshot RMSE and PR evidence workflow"
+  default_prompt: "Use $visual-pixel-match to capture UI screenshots, compute RMSE, generate side-by-side evidence, and update the PR with GitHub-hosted images."

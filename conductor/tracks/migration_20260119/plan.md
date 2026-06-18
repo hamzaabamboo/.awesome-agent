@@ -2,13 +2,13 @@
 
 ## Phase 1: Backup & Analysis [checkpoint: f16bb43]
 - [x] Task: Create a full archive tarball of `~/.gemini` and `~/.claude` f16bb43
-- [x] Task: List and analyze contents of `~/.gemini/skills` to determine if they are generic or Gemini-specific f16bb43
+- [x] Task: List and analyze contents of the then-current Gemini skill directory to determine if they are generic or Gemini-specific f16bb43
 - [x] Task: Conductor - User Manual Verification 'Phase 1: Backup & Analysis' (Protocol in workflow.md) f16bb43
 
 ## Phase 2: Import & Organize [checkpoint: f16bb43]
 - [x] Task: Import `GEMINI.md` and `prompt.md` to `agents/gemini/` f16bb43
 - [x] Task: Import `CLAUDE.md` to `agents/claude/` f16bb43
-- [x] Task: Import generic skills from `~/.gemini/skills/` to `shared/skills/` f16bb43
+- [x] Task: Import generic skills from the then-current Gemini skill directory into the legacy shared skill directory f16bb43
 - [x] Task: Import Gemini extensions to `agents/gemini/extensions/` f16bb43
 - [x] Task: Import Claude plugins/commands to `agents/claude/` f16bb43
 - [x] Task: Conductor - User Manual Verification 'Phase 2: Import & Organize' (Protocol in workflow.md) f16bb43

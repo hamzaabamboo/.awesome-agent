@@ -3,10 +3,10 @@
 set -e
 
 SYNC_SCRIPT="./meta/sync.sh"
-HOME_MOCK="$(pwd)/tests/mock_home"
-SHARED_DIR="./shared/local-skills"
+HOME_MOCK="$(mktemp -d "${TMPDIR:-/tmp}/awesome-agent-transform.XXXXXX")"
+SHARED_DIR="$HOME_MOCK/local-skills"
 
-rm -rf "$HOME_MOCK"
+trap 'rm -rf "$HOME_MOCK"' EXIT
 mkdir -p "$SHARED_DIR"
 cat <<'EOF' > "$SHARED_DIR/test_sync_flat.md"
 ---
@@ -20,13 +20,26 @@ EOF
 test_transform() {
     echo "Testing skill normalization..."
 
-export TARGET_ROOT="$HOME_MOCK"
-export SKIP_REMOTE_SKILLS_INSTALL=true
+    export TARGET_ROOT="$HOME_MOCK"
+    export SKIP_REMOTE_SKILLS_INSTALL=true
+    export PROJECT_TEMP_DIR="$HOME_MOCK/.build"
+    export AGENTS_MD="$HOME_MOCK/AGENTS.md"
+    export LOCAL_SHARED_SKILLS="$SHARED_DIR"
 
     $SYNC_SCRIPT --yes
 
     if [ ! -f "$HOME_MOCK/.agent/skills/test_sync_flat/SKILL.md" ]; then
         echo "FAIL: Canonical skill file not created"
+        exit 1
+    fi
+
+    if [ ! -f "$HOME_MOCK/.agents/skills/test_sync_flat/SKILL.md" ]; then
+        echo "FAIL: Codex skill file not created"
+        exit 1
+    fi
+
+    if [ "$(readlink "$HOME_MOCK/.agents/skills/test_sync_flat")" != "$HOME_MOCK/.build/skills/test_sync_flat" ]; then
+        echo "FAIL: Codex skill should be a per-skill symlink"
         exit 1
     fi
 

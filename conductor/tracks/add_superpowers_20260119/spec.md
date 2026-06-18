@@ -1,21 +1,15 @@
-# Specification - Add Superpowers Skills
+# Specification - Add Superpowers Skills (Archived)
 
-## Goal
-Integrate the "Superpowers" skill library (from https://github.com/obra/superpowers) into the Conductor repository, making its skills available to both Gemini and Claude via the existing sync and transformation engine.
+## Status
 
-## Strategy
-1.  **Source Management:**
-    -   Clone the `superpowers` repository into `conductor/external/superpowers`.
-    -   This keeps third-party code separate from your own `shared/skills`.
-2.  **Integration:**
-    -   Update `meta/sync.sh` to include `external/superpowers/skills` as an additional source for the Transformation Logic.
-    -   The transformation logic will:
-        -   Copy `SKILL.md` files to `build/gemini/skills/` (renaming to `superpowers-[skillname].md` to avoid collisions).
-        -   Wrap `SKILL.md` files in XML and save to `build/claude/skills/` (renaming to `superpowers-[skillname].xml`).
-3.  **Sync:**
-    -   The existing Sync Logic in `meta/sync.sh` will automatically pick up the new files in `build/` and symlink them to `~/.gemini/skills` and `~/.claude/skills` (or `.claudebot` / `.claude`).
+Superseded by the current `skills.sh` remote-skill model.
 
-## Benefits
--   **DRY:** You download the skills once.
--   **Cross-Agent:** Skills work for both Gemini (Markdown) and Claude (XML).
--   **Managed:** Updates are handled by `git pull` in the external directory.
+## Current Architecture
+
+- `obra/superpowers` is listed in `shared/remote-skills.txt`.
+- Remote skills install through `meta/install-remote-skills.sh`.
+- Third-party remote skills should not be vendored into this repo.
+- Repo-local custom skills remain under `shared/local-skills/`.
+- Local skill builds are exposed through `~/.agent/skills` and per-skill links inside `~/.agents/skills`.
+
+The earlier external clone, XML wrapping, and per-agent skill-directory output model is no longer active.

@@ -5,9 +5,10 @@ obra/superpowers|using-superpowers
 vercel-labs/agent-browser|agent-browser
 nextlevelbuilder/ui-ux-pro-max-skill|ui-ux-pro-max
 vercel-labs/agent-browser|dogfood
-google-labs-code/stitch-skills|stitch-design
+google-labs-code/stitch-skills
 vercel-labs/agent-skills
 obra/superpowers
 elysiajs/skills
 forrestchang/andrej-karpathy-skills
 Astro-Han/karpathy-llm-wiki
+addyosmani/web-quality-skills

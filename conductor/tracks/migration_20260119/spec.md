@@ -1,30 +1,17 @@
-# Specification - Migrate Existing Configurations
+# Specification - Migrate Existing Configurations (Archived)
 
-## Goal
-Migrate existing configuration files from `~/.gemini/` and `~/.claude/` into the centralized `conductor` repository structure, preserving functionality while enabling version control and sharing.
+## Status
 
-## Source Analysis
-- **~/.gemini/**
-    - `GEMINI.md`: Primary system prompt/config -> `agents/gemini/GEMINI.md`
-    - `skills/`: Directory of skills -> `shared/skills/` (Review for generic vs specific)
-    - `extensions/`: Gemini CLI extensions -> `agents/gemini/extensions/`
-    - `prompt.md`: Likely a system prompt -> `agents/gemini/prompt.md` (or shared if generic)
-- **~/.claude/**
-    - `CLAUDE.md`: Primary system prompt/config -> `agents/claude/CLAUDE.md`
-    - `commands`: Custom commands -> `agents/claude/commands/`
-    - `plugins/`: Plugins -> `agents/claude/plugins/`
+Superseded by the current unified prompt and local-skill symlink model.
 
-## Migration Strategy
-1.  **Backup:** The `sync.sh` script already has backup logic, but we should do a manual archive of the current state just in case.
-2.  **Import:** Copy files from Home to Repo.
-    -   **Consolidate Skills:** Import `~/.gemini/skills/*.md` to `shared/skills/`.
-    -   **Agent Configs:** Import `GEMINI.md` and `CLAUDE.md`.
-    -   **Extensions/Plugins:** Import extensions/plugins.
-3.  **Validate:** Ensure the file structures match what the sync script expects.
-4.  **Execute Sync:** Run `meta/sync.sh` to replace the original files with symlinks.
+## Current Architecture
 
-## Success Criteria
-- `~/.gemini/GEMINI.md` is a symlink to `repo/agents/gemini/GEMINI.md`.
-- `~/.claude/CLAUDE.md` is a symlink to `repo/agents/claude/CLAUDE.md`.
-- Skills in `~/.gemini/skills/` are symlinks to `repo/build/gemini/skills/`.
-- User confirms the agents still work as expected.
+- `shared/core_profile.md` and `shared/skill_system.md` generate `shared/AGENTS.md`.
+- Claude, Gemini, and Codex prompt files symlink to `shared/AGENTS.md`.
+- Repo-local custom skills live under `shared/local-skills/`.
+- Remote skills live in `shared/remote-skills.txt` and install through `skills.sh`.
+- `meta/sync.sh` builds local skills into `.build/skills`.
+- `~/.agent/skills` symlinks to `.build/skills`.
+- `~/.agents/skills` stays a real global skill directory with repo-local skills linked into it one by one.
+
+The earlier per-agent source directory, legacy shared-skill directory, backup-confirmation, and per-agent skill-output model is no longer active.

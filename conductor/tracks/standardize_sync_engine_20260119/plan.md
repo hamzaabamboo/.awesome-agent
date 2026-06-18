@@ -1,35 +1,21 @@
 # Implementation Plan - Standardize Sync Engine
 
-## Phase 1: The Universal Prompt [checkpoint: 1]
-- [ ] Task: Create `shared/AGENTS.md` based on `shared/core_profile.md`.
-- [ ] Task: Add the static `<skills_system>` boilerplate (usage instructions) to `AGENTS.md`.
-- [ ] Task: Create a placeholder `<!-- SKILLS_LIST -->` marker in `AGENTS.md` for injection.
-- [ ] Task: Update `meta/sync.sh` to symlink `shared/AGENTS.md` to `~/.gemini/GEMINI.md` and `~/.claude/CLAUDE.md`.
+Archived. This track is superseded by the current sync-engine contract.
 
-## Phase 2: Metadata Extraction [checkpoint: 2]
-- [ ] Task: Write a script (python or bash) to parse YAML frontmatter from `SKILL.md` files.
-- [ ] Task: Generate the `<available_skills>` XML block from the parsed metadata.
-- [ ] Task: Inject this XML block into `AGENTS.md` during the `meta/sync.sh` run.
+Current behavior:
 
-## Phase 3: Universal Storage [checkpoint: 3]
-- [ ] Task: Update `meta/sync.sh` to sync all skills to `~/.agent/skills/` (creating the dir if needed).
-- [ ] Task: Update `AGENTS.md` usage instructions to tell agents how to load skills from `~/.agent/skills/`.
-    -   *Instruction:* "To load a skill, read the file `~/.agent/skills/<skill-name>/SKILL.md`".
+- Canonical prompt source is `shared/core_profile.md`; generated prompt output is `shared/AGENTS.md`.
+- Skills are Markdown `SKILL.md` directories, not XML blocks.
+- Repo-local custom skill source lives in `shared/local-skills/`.
+- Remote skills are listed in `shared/remote-skills.txt` and installed through `skills.sh` by `meta/sync.sh`.
+- `~/.agent/skills` points at this repo's `.build/skills`.
+- `~/.agents/skills` remains a real global skills directory; repo-local custom skills are linked into it per skill.
+- Remote skills are not vendored under `external/` or `shared/skills/`.
 
-## Phase 4: Verification [checkpoint: 4]
-- [ ] Task: Run `meta/sync.sh`.
-- [ ] Task: Verify `~/.gemini/GEMINI.md` contains the generated skill list.
-- [ ] Task: Verify `~/.agent/skills/` contains the actual skill files.
-- [ ] Task: Manual Test - Ask Gemini "What skills do you have?" and "Load the git skill".
+Verification lives in `tests/`:
 
-## Phase 5: Modular Rule Support (Vercel Inspiration) [checkpoint: 5]
-- [x] Task: Vendor Vercel skills into `external/vercel-skills/`.
-- [ ] Task: Update `meta/sync.sh` to support stitching: if a skill has a `rules/` folder, concatenate all `*.md` files into the final `SKILL.md`.
-- [ ] Task: Implement context optimization: if `SKILL.md` > 500 lines, automatically move detailed sections to `references/` during the build.
-
-
-## Phase 5: Modular Rule Support (Vercel Inspiration) [checkpoint: 5]
-- [x] Task: Vendor Vercel skills into `external/vercel-skills/`.
-- [ ] Task: Update `meta/sync.sh` to support stitching: if a skill has a `rules/` folder, concatenate all `*.md` files into the final `SKILL.md`.
-- [ ] Task: Implement context optimization: if `SKILL.md` > 500 lines, automatically move detailed sections to `references/` during the build.
-
+- `tests/test_transform.sh`
+- `tests/test_cleanup.sh`
+- `tests/test_prompt_unification.sh`
+- `tests/test_remote_skills.sh`
+- `tests/test_sync_args.sh`

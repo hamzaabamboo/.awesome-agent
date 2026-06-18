@@ -3,7 +3,7 @@
 ## Scripting & Automation
 - **Primary Language**: POSIX-compliant Bash.
     - Focus on cross-platform compatibility (macOS/Linux).
-    - Use standard Unix utilities (`ln`, `mkdir`, `rsync`, `sed`, `find`, `tr`).
+    - Use standard Unix utilities (`ln`, `mkdir`, `cp`, `sed`, `find`, `tr`).
 - **Remote Skill Registry**: [skills.sh](https://skills.sh/)
     - Used as the source of truth for remote skills.
     - Installed via `npx skills add`.
@@ -13,10 +13,10 @@
 - **Local Skills Only**: This repository stores only local custom skills. Upstream skills are installed from `skills.sh`.
 
 ## Deployment Mechanism
-- **Local Skill Store**: Repo-local skills are deployed to `~/.agent/skills/`.
+- **Local Skill Stores**: `~/.agent/skills/` points to the repo build. `~/.agents/skills/` stays a real global skill directory, with repo-local skills linked into it one by one.
 - **Symlinking**:
     - `~/.gemini/GEMINI.md` and `~/.claude/CLAUDE.md` link back to `shared/AGENTS.md`.
-- **Rsync Layering**:
+- **Build Copying**:
     1. Shared local skills are copied to the build directory.
-    2. Agent-specific local overrides are layered on top.
-    3. The final result is rsync'd to the local skill store in the home directory.
+    2. The generated build directory is symlinked to `~/.agent/skills/`.
+    3. Each generated local skill is symlinked into `~/.agents/skills/` without replacing existing global skills.
