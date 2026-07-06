@@ -268,6 +268,30 @@ sync_agents_skill_links() {
     done
 }
 
+sync_claude_skill_links() {
+    local claude_skills="$TARGET_ROOT/.claude/skills"
+
+    run mkdir -p "$claude_skills"
+
+    find "$BUILD_SKILLS_DIR" -mindepth 1 -maxdepth 1 -type d | sort | while read -r skill_dir; do
+        local skill_name
+        local target
+        skill_name="$(basename "$skill_dir")"
+        target="$claude_skills/$skill_name"
+
+        if [ -e "$target" ] && [ ! -L "$target" ]; then
+            log "Preserving existing Claude skill: $target"
+            continue
+        fi
+
+        if [ -L "$target" ]; then
+            run rm -f "$target"
+        fi
+
+        run ln -s "../../.agents/skills/$skill_name" "$target"
+    done
+}
+
 render_agents_prompt() {
     if [ "$DRY_RUN" = true ]; then
         log "[dry-run] render $AGENTS_MD"
@@ -383,6 +407,8 @@ sync_agents_skill_links
 for agent in gemini claude; do
     run mkdir -p "$TARGET_ROOT/.$agent"
 done
+
+sync_claude_skill_links
 
 link_path "$AGENTS_MD" "$TARGET_ROOT/.claude/CLAUDE.md"
 link_path "$AGENTS_MD" "$TARGET_ROOT/.gemini/GEMINI.md"
