@@ -84,7 +84,17 @@ test_prompt_unification() {
         exit 1
     fi
 
-    for legacy in "$HOME_MOCK/.claude/skills" "$HOME_MOCK/.gemini/skills" "$HOME_MOCK/.codex/skills"; do
+    if [ ! -d "$HOME_MOCK/.claude/skills" ] || [ -L "$HOME_MOCK/.claude/skills" ]; then
+        echo "FAIL: .claude/skills is not a real directory of skill links"
+        exit 1
+    fi
+
+    if [ ! -L "$HOME_MOCK/.claude/skills/real-testing-evidence" ] || [ ! -e "$HOME_MOCK/.claude/skills/real-testing-evidence/SKILL.md" ]; then
+        echo "FAIL: .claude/skills/real-testing-evidence is not a working skill symlink"
+        exit 1
+    fi
+
+    for legacy in "$HOME_MOCK/.gemini/skills" "$HOME_MOCK/.codex/skills"; do
         if [ -e "$legacy" ]; then
             echo "FAIL: legacy skill path exists: $legacy"
             exit 1
