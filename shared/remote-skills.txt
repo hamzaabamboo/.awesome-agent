@@ -1,9 +1,11 @@
 vercel-labs/skills|find-skills
 anthropics/skills|frontend-design
+anthropics/skills|canvas-design
 anthropics/skills|skill-creator
 obra/superpowers|using-superpowers
 vercel-labs/agent-browser|agent-browser
 nextlevelbuilder/ui-ux-pro-max-skill|ui-ux-pro-max
+leonxlnx/taste-skill|design-taste-frontend
 vercel-labs/agent-browser|dogfood
 google-labs-code/stitch-skills
 vercel-labs/agent-skills

@@ -112,6 +112,8 @@ test_prompt_unification() {
     assert_contains "$AGENTS_FILE" "Build the verification matrix from the affected behavior"
     assert_contains "$AGENTS_FILE" "If the user interrupts a wait or poll, stop polling immediately"
     assert_contains "$AGENTS_FILE" "Run commands one by one unless the user explicitly asks for batching"
+    assert_contains "$AGENTS_FILE" "## Design Skill Invocation"
+    assert_contains "$AGENTS_FILE" "Before proposing or implementing design work, invoke the relevant installed design skills"
     assert_contains "$AGENTS_FILE" "real-testing-evidence"
     assert_not_contains "$AGENTS_FILE" "Do NOT run commands one by one"
     assert_not_contains "$AGENTS_FILE" "CHAIN"

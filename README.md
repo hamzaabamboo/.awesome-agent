@@ -35,6 +35,16 @@ Flags:
 - `-d`, `--dry-run`: show intended filesystem actions without writing
 - `-y`, `--yes`: non-interactive mode
 
+### Edit operating rules / persona
+
+The master operating rules and persona live in `shared/core_profile.md`. This is the ONLY file to edit for rule/persona changes.
+
+1. Edit `shared/core_profile.md` (and `shared/skill_system.md` for skill policy). NEVER hand-edit `shared/AGENTS.md` or the deployed `~/.claude/CLAUDE.md`, `~/.gemini/GEMINI.md`, `~/.codex/AGENTS.md` — they are GENERATED/symlinked and any direct edit is overwritten by the next sync.
+2. Run `./meta/sync.sh --verbose --yes` to re-render `shared/AGENTS.md` and redeploy the symlinked targets.
+3. Verify with `./meta/sync.sh --dry-run` first if the change is risky, and confirm the deployed prompt reflects the edit.
+
+Do not duplicate rules into per-project `AGENTS.md`/`CLAUDE.md`; cross-agent rules belong here in `shared/core_profile.md`.
+
 ### Add a new local skill
 
 Put it in `shared/local-skills/<name>/SKILL.md` or `shared/local-skills/<name>.md`.

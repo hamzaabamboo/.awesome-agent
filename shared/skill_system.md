@@ -12,3 +12,9 @@ Use `skills.sh` as the source of truth for non-local skills.
 - Do not vendor or copy skills that already live on `skills.sh`
 - Local custom skill source must live under `shared/local-skills/`
 - Generated local skill targets must stay inside this repo, with external agent paths symlinked back here instead of copied into `~/.agent`, `~/.agents`, `~/.codex`, `~/.claude`, or `~/.gemini`
+
+## Design Skill Invocation
+
+- Treat `design`, `redesign`, `UI`, `UX`, `mockup`, `visual`, `layout`, `theme`, `style`, `brand`, and `pixel-perfect` as design triggers.
+- Before proposing or implementing design work, invoke the relevant installed design skills. For broad or open-ended design work, invoke most applicable design skills first, including `frontend-design`, `web-design-guidelines`, `ui-ux-pro-max`, `design-md`, `canvas-design`, `design-taste-frontend`, `taste-design`, `visual-pixel-match`, and any matching Stitch/Figma/design-system skill.
+- Use a smaller subset only when the design scope is clearly narrow, and do not attempt the design first and retrofit skill guidance afterward.
