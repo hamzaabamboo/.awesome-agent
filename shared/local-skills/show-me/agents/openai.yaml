@@ -1,0 +1,4 @@
+interface:
+  display_name: "Show Me"
+  short_description: "Make active work visibly inspectable now"
+  default_prompt: "Use $show-me to make the current work and understanding visibly inspectable."

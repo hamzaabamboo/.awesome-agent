@@ -59,7 +59,7 @@ test_cleanup() {
         exit 1
     fi
 
-    if [ -e "$HOME_MOCK/.claude/skills" ] || [ -e "$HOME_MOCK/.gemini/skills" ] || [ -e "$HOME_MOCK/.gemini/antigravity/skills" ] || [ -e "$HOME_MOCK/.codex/skills" ]; then
+    if [ -L "$HOME_MOCK/.claude/skills" ] || [ -e "$HOME_MOCK/.gemini/skills" ] || [ -e "$HOME_MOCK/.gemini/antigravity/skills" ] || [ -e "$HOME_MOCK/.codex/skills" ]; then
         echo "FAIL: Legacy agent skill links were not removed"
         exit 1
     fi

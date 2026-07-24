@@ -24,24 +24,36 @@ while IFS= read -r entry <&3; do
         continue
     fi
 
-    repo="${entry%%|*}"
     skill=""
-    if [[ "$entry" == *"|"* ]]; then
-        skill="${entry#*|}"
-    fi
+    agent=""
+    IFS='|' read -r repo skill agent <<< "$entry"
 
     if [ "$DRY_RUN" = true ]; then
+        cmd=("npx" "skills" "add" "$repo")
         if [ -n "$skill" ]; then
-            echo "npx skills add $repo --skill $skill --yes --global --full-depth"
-        else
-            echo "npx skills add $repo --yes --global"
+            cmd+=("--skill" "$skill")
         fi
+        if [ -n "$agent" ]; then
+            cmd+=("-a" "$agent")
+        fi
+        cmd+=("--yes" "--global")
+        if [ -n "$skill" ]; then
+            cmd+=("--full-depth")
+        fi
+        printf '%s\n' "${cmd[*]}"
         continue
     fi
 
+    args=("$repo")
     if [ -n "$skill" ]; then
-        npx skills add "$repo" --skill "$skill" --yes --global --full-depth
-    else
-        npx skills add "$repo" --yes --global
+        args+=("--skill" "$skill")
     fi
+    if [ -n "$agent" ]; then
+        args+=("-a" "$agent")
+    fi
+    args+=("--yes" "--global")
+    if [ -n "$skill" ]; then
+        args+=("--full-depth")
+    fi
+    npx skills add "${args[@]}"
 done 3< "$REMOTE_SKILLS_FILE"

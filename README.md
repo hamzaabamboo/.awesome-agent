@@ -16,6 +16,7 @@ A repo-managed prompt and local-skill layer for Gemini CLI, Claude Code, and Cod
 - `shared/AGENTS.md`: Generated unified prompt for Claude, Gemini, and Codex.
 - `shared/local-skills/`: Repo-local custom skills only.
 - `shared/remote-skills.txt`: Remote skill repos that should be installed via `skills.sh`.
+- `shared/wrappers/`: Repo-managed executable wrappers linked into `~/.local/bin`.
 
 ### `meta/`
 - `meta/sync.sh`: Builds local skills, renders `shared/AGENTS.md`, installs remote `skills.sh` entries from `shared/remote-skills.txt`, and syncs the shared prompt/skill layer.
@@ -53,6 +54,12 @@ Put it in `shared/local-skills/<name>/SKILL.md` or `shared/local-skills/<name>.m
 
 Add the repo to `shared/remote-skills.txt`, then run `./meta/sync.sh --yes`.
 
+Use `repo`, `repo|skill`, or `repo|skill|agent` lines. `agent` is passed to `npx skills add -a`.
+
+### Agent wrappers
+
+Wrappers in `shared/wrappers/` are linked into `~/.local/bin` by sync. The `claude` wrapper runs Claude Code with `ANTHROPIC_BASE_URL=http://127.0.0.1:47821` and kickstarts the `com.awesome-agent.pxpipe` LaunchAgent when needed. Set `PXPIPE_DISABLE=1` to bypass it.
+
 ## Behavior
 
 Running `meta/sync.sh`:
@@ -62,4 +69,6 @@ Running `meta/sync.sh`:
 3. Links `~/.claude/CLAUDE.md`, `~/.gemini/GEMINI.md`, and `~/.codex/AGENTS.md` to the same prompt file.
 4. Replaces `~/.claude/commands` and `~/.claude/rules` links that are not managed by this repo before syncing the shared global setup.
 5. Installs every remote skill entry from `shared/remote-skills.txt`.
-6. Replaces the managed prompt targets and repo-owned local skill links.
+6. Links repo-managed wrappers into `~/.local/bin`.
+7. Writes the `com.awesome-agent.pxpipe` LaunchAgent plist.
+8. Replaces the managed prompt targets and repo-owned local skill links.

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Prove It in PR"
+  short_description: "Embed tested proof and review the rendered PR"
+  default_prompt: "Use $prove-it-in-pr to test each affected flow, embed the evidence in the PR, and proofread the rendered result."

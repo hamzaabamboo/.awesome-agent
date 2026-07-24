@@ -8,17 +8,19 @@ The user's rule is "no scripts" for reading — meaning: never grep for a keywor
 ## Steps
 1. Isolate his words and pre-chunk:
    ```
-   scripts/isolate_user_messages.sh <workdir>
+   scripts/isolate_user_messages.sh <workdir> [since_epoch]
    ```
-   Produces `<workdir>/codex_user.txt` (all Codex prompts), `<workdir>/claude_user.txt` (all Claude user turns), and `<workdir>/chunks/` (8000-line pieces).
+   Omit `since_epoch` for all history. To refresh from the first use of a skill, resolve its earliest explicit invocation from the logs and pass that epoch. Produces source-specific JSONL, a chronologically merged `user_messages.jsonl`, readable `user_messages.txt`, and 100-message files under `<workdir>/chunks/`. Each record preserves source, timestamp, session, cwd when available, and exact text.
 
-2. Read every chunk in full. Fan one reader per chunk (Workflow `parallel`, or subagents). Each reader reads its chunk end to end and extracts standing demands: `{rule, category, verbatim quote, strength}`. Include repeated corrections, pet peeves, and anything he says angrily. Exclude one-off task specifics unless they reveal a behavioral rule.
+2. Create a durable refresh note before reading. Record cutoff derivation, source files, chunk assignments, and an append-only tranche ledger. After each chunk, append `{chunk, read fully, rules, strongest exact quotes, existing-note gaps}`. Never postpone note-taking until after all reading.
 
-3. Merge and de-duplicate across readers. Combine paraphrases of the same rule, keep the strongest verbatim quotes, count frequency, set severity from intensity. Cluster by category. Order by severity (extreme first), then frequency.
+3. Read every chunk in full. Fan cheap readers across chunks when available. Each reader reads its assigned chunks end to end and returns standing demands: `{rule, category, verbatim quote, strength, source, timestamp, session}`. Include repeated corrections, pet peeves, and anything he says angrily. Exclude one-off task specifics unless they reveal a behavioral rule. The steering agent reads every tranche note and reopens raw chunks for any vague, unsupported, or conflicting extraction.
 
-4. Critic pass. Re-read a handful of raw chunks in full and look for any standing demand missing from the merged list. Add what is missing.
+4. Merge and de-duplicate across readers. Combine paraphrases of the same rule, keep the strongest verbatim quotes, count frequency, set severity from intensity. Cluster by category. Order by severity (extreme first), then frequency.
 
-5. Persist. Append new/updated demands to `references/user-demands.md`. Promote cross-agent rules into `~/.awesome-agent/shared/AGENTS.md`; project-specific ones into that project's `AGENTS.md`/`CLAUDE.md`/docs.
+5. Critic pass. Re-read the raw chunks whose tranche notes contain uncertainty, conflicts, or unusually few findings. Compare every extracted rule against the existing notes and identify omissions, stale rules, and rules the agent keeps violating.
+
+6. Persist. Update `references/user-demands.md`, this skill, and `~/.awesome-agent/shared/core_profile.md` from the evidence. Keep the refresh note as the audit trail. Promote project-specific rules into that project's `AGENTS.md`/`CLAUDE.md`/docs.
 
 ## Sources
 - `~/.codex/history.jsonl` — every Codex prompt (already user-only; no session mining needed for Codex).

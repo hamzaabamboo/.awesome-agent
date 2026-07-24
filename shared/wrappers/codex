@@ -1,0 +1,33 @@
+#!/bin/bash
+
+set -euo pipefail
+
+real_codex="${PXPIPE_CODEX_BIN:-/opt/homebrew/bin/codex}"
+host="${PXPIPE_HOST:-127.0.0.1}"
+port="${PXPIPE_PORT:-47821}"
+base_url="http://$host:$port"
+
+if [ "${PXPIPE_DISABLE:-}" = "1" ] || [ -z "${OPENAI_API_KEY:-}" ]; then
+    exec "$real_codex" "$@"
+fi
+
+if ! curl -fsS --max-time 1 "$base_url/" >/dev/null 2>&1; then
+    uid="$(id -u)"
+    label="gui/$uid/com.awesome-agent.pxpipe"
+
+    if ! launchctl kickstart -k "$label" >/dev/null 2>&1; then
+        echo "pxpipe launch agent is not loaded. Run ~/.awesome-agent/meta/sync.sh --verbose --yes, then launchctl bootstrap gui/$uid ~/Library/LaunchAgents/com.awesome-agent.pxpipe.plist" >&2
+        exit 1
+    fi
+
+    curl -fsS --retry 3 --retry-delay 1 --retry-all-errors --max-time 1 "$base_url/" >/dev/null
+fi
+
+exec "$real_codex" \
+    -c 'model_provider="pxpipe"' \
+    -c 'model_providers.pxpipe.name="pxpipe OpenAI"' \
+    -c "model_providers.pxpipe.base_url=\"$base_url/v1\"" \
+    -c 'model_providers.pxpipe.env_key="OPENAI_API_KEY"' \
+    -c 'model_providers.pxpipe.wire_api="responses"' \
+    -c 'model_providers.pxpipe.supports_websockets=false' \
+    "$@"

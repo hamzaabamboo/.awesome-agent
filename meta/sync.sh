@@ -338,7 +338,21 @@ sync_claude_commands() {
 
 sync_gemini_commands() {
     local gemini_dir="$TARGET_ROOT/.gemini/extensions/init-repo/commands"
+    local extension_dir="$TARGET_ROOT/.gemini/extensions/init-repo"
+    local extension_file="$extension_dir/gemini-extension.json"
     reset_dir "$gemini_dir"
+
+    if [ "$DRY_RUN" = true ]; then
+        log "[dry-run] generate $extension_file"
+    else
+        cat > "$extension_file" <<'JSON'
+{
+  "name": "init-repo",
+  "description": "Repo setup commands managed by .awesome-agent.",
+  "version": "1.0.0"
+}
+JSON
+    fi
 
     if [ ! -d "$PROJECT_ROOT/shared/commands" ]; then
         return 0
@@ -380,6 +394,68 @@ PY
     done
 }
 
+sync_wrappers() {
+    local source_dir="$PROJECT_ROOT/shared/wrappers"
+    local target_dir="$TARGET_ROOT/.local/bin"
+
+    if [ ! -d "$source_dir" ]; then
+        return 0
+    fi
+
+    run mkdir -p "$target_dir"
+
+    find "$source_dir" -mindepth 1 -maxdepth 1 -type f | sort | while read -r wrapper; do
+        local name
+        name="$(basename "$wrapper")"
+        link_path "$wrapper" "$target_dir/$name"
+    done
+}
+
+sync_launch_agents() {
+    local launch_agents="$TARGET_ROOT/Library/LaunchAgents"
+    local plist="$launch_agents/com.awesome-agent.pxpipe.plist"
+    local home="$TARGET_ROOT"
+
+    run mkdir -p "$launch_agents"
+    run mkdir -p "$home/.pxpipe"
+
+    if [ "$DRY_RUN" = true ]; then
+        log "[dry-run] generate $plist"
+        return 0
+    fi
+
+    python3 - "$plist" "$home" <<'PY'
+import pathlib
+import plistlib
+import sys
+
+plist = pathlib.Path(sys.argv[1])
+home = sys.argv[2]
+path = [
+    f"{home}/.local/share/mise/installs/node/22/bin",
+    "/opt/homebrew/bin",
+    "/usr/local/bin",
+    "/usr/bin",
+    "/bin",
+]
+data = {
+    "Label": "com.awesome-agent.pxpipe",
+    "ProgramArguments": ["/usr/bin/env", "npx", "-y", "pxpipe-proxy"],
+    "EnvironmentVariables": {
+        "HOME": home,
+        "PATH": ":".join(path),
+    },
+    "WorkingDirectory": home,
+    "RunAtLoad": True,
+    "KeepAlive": True,
+    "ThrottleInterval": 10,
+    "StandardOutPath": f"{home}/.pxpipe/launchd.out.log",
+    "StandardErrorPath": f"{home}/.pxpipe/launchd.err.log",
+}
+plist.write_bytes(plistlib.dumps(data, sort_keys=False))
+PY
+}
+
 echo "Standardizing skills..."
 
 if [ "$YES" = false ]; then
@@ -415,6 +491,8 @@ link_path "$AGENTS_MD" "$TARGET_ROOT/.gemini/GEMINI.md"
 
 sync_claude_commands
 sync_gemini_commands
+sync_wrappers
+sync_launch_agents
 
 reset_dir "$TARGET_ROOT/.claude/rules"
 link_path "$AGENTS_MD" "$TARGET_ROOT/.codex/AGENTS.md"

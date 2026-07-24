@@ -1,0 +1,26 @@
+#!/bin/bash
+
+set -euo pipefail
+
+real_claude="${PXPIPE_CLAUDE_BIN:-/opt/homebrew/bin/claude}"
+host="${PXPIPE_HOST:-127.0.0.1}"
+port="${PXPIPE_PORT:-47821}"
+base_url="http://$host:$port"
+
+if [ "${PXPIPE_DISABLE:-}" = "1" ]; then
+    exec "$real_claude" "$@"
+fi
+
+if ! curl -fsS --max-time 1 "$base_url/" >/dev/null 2>&1; then
+    uid="$(id -u)"
+    label="gui/$uid/com.awesome-agent.pxpipe"
+
+    if ! launchctl kickstart -k "$label" >/dev/null 2>&1; then
+        echo "pxpipe launch agent is not loaded. Run ~/.awesome-agent/meta/sync.sh --verbose --yes, then launchctl bootstrap gui/$uid ~/Library/LaunchAgents/com.awesome-agent.pxpipe.plist" >&2
+        exit 1
+    fi
+
+    curl -fsS --retry 3 --retry-delay 1 --retry-all-errors --max-time 1 "$base_url/" >/dev/null
+fi
+
+exec env ANTHROPIC_BASE_URL="$base_url" "$real_claude" "$@"

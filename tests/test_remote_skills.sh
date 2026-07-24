@@ -12,12 +12,19 @@ if [ "$actual_count" != "$expected_count" ]; then
 fi
 
 while IFS= read -r entry; do
-    if [[ "$entry" == *"|"* ]]; then
-        repo="${entry%%|*}"
-        skill="${entry#*|}"
-        expected="npx skills add $repo --skill $skill --yes --global --full-depth"
-    else
-        expected="npx skills add $entry --yes --global"
+    skill=""
+    agent=""
+    IFS='|' read -r repo skill agent <<< "$entry"
+    expected="npx skills add $repo"
+    if [ -n "$skill" ]; then
+        expected="$expected --skill $skill"
+    fi
+    if [ -n "$agent" ]; then
+        expected="$expected -a $agent"
+    fi
+    expected="$expected --yes --global"
+    if [ -n "$skill" ]; then
+        expected="$expected --full-depth"
     fi
 
     if ! grep -Fxq "$expected" <<<"$output"; then

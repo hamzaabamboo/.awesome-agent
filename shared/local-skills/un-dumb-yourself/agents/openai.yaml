@@ -1,0 +1,4 @@
+interface:
+  display_name: "Un-Dumb Yourself"
+  short_description: "Run GYST before and after context compression"
+  default_prompt: "Run $un-dumb-yourself before to execute GYST and preserve task state, or $un-dumb-yourself after to reconstruct state and execute GYST again."

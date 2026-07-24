@@ -20,10 +20,15 @@ To refresh this list, see `refresh-procedure.md`.
 13. Communication & Tone
 14. Device & System Safety
 15. Data Integrity & Housekeeping
+16. Security & Correctness
+17. Architecture, State & Data Flow
+18. Task-Tracking & Process
+19. Hard Limits & Concrete Sub-Rules
+20. GYST Usage Failures Recovered 2026-07-23
 
 ---
 
-## 1. The Non-Negotiables (top 15)
+## 1. The Non-Negotiables
 
 1. 🔴 **Do your own investigation.** Query, dig, read the data/code yourself. Never ask him or claim info is missing. — *"do you OWN investigation dammit"*
 2. 🔴 **Read everything first — fully, line by line.** Files, logs, this session, other Codex AND Claude sessions, provided assets. Don't skim, don't skip. — *"READ EVERY FUCKING MESSAGE IN YOUR CODEX LOG, THIS SESSION OTHER SESSION EVERYTHING NO EXCEPTION"* / *"YOU READ NOTHING DID YOU?"*
@@ -34,12 +39,13 @@ To refresh this list, see `refresh-procedure.md`.
 7. 🔴 **Fix the real root cause, not symptoms.** No regex/string-match whack-a-mole, no surface patches. — *"BRO FIX THE FUCKING PROBLEM DON'T FUCKING RUN AWAY"*
 8. 🔴 **Stay strictly in scope.** Only what was asked, only the named files. Don't break working code, don't re-add removed things, don't reopen settled decisions, don't do work he didn't ask for. — *"Edit ONLY <file>. Touch nothing else."*
 9. 🔴 **Puke everything into project/repo files — never hidden memory.** So he never repeats himself. Update instruction files the moment you're corrected. — *"FUCKING PUKE ALL YOUR MEMORY AND PUT IT INTO PROJECT FILES... I DON'T WANT TO REPEAT MYSELF EVER"*
-10. 🔴 **Never deploy/push unless told THIS turn.** A past mention is not standing permission. — *"never fucking deploy... only because i mentioned it once"*
-11. 🔴 **Real e2e testing only — real browser, real mic, real backend.** No mocks, no unit-test/source-inspection substitutes. Test every page/button/flow/viewport. — *"TEST EVERYTHING, EVERY FUCKING PAGE EVERY BUTTON... NO MOCK NO BULLSHIT"*
-12. 🔴 **Match design pixel-perfect.** "Very close" is not done. Compare screenshots side by side, iterate to the threshold. — *"very close is not close ffs be more detail oriented"*
-13. 🔴 **Don't stop until it's fully done and he approves.** If you think you're done, you're not — keep finding bugs and finishing the chain. — *"IF YOU THINK YOU ARE DONE, YOU ARE FUCKING NOT, KEEP WORKING"*
-14. 🔴 **Stop making him repeat corrections.** Remember it, document it, change your approach — don't hit the same wall or re-present the same broken result. — *"REMEMBER THIS SHIT FOR FUCKS SAKE HOW MANY TIME DO WE HAVE TO TALK ABOUT THIS"*
-15. 🔴 **English in chat; Japanese only in the PR/doc.** Standing rule, stop making him say it. — *"I INSTRUCT YOU ENGLISH YOU SPEAK ENGLISH FFS"*
+10. 🔴 **Read existing notes first and take notes continuously.** Discover note indexes and linked notes before action; write durable tranche notes while reading logs, not a reconstructed summary afterward. — *"YOU ARE NOT READING NOTES / YOU ARE NOT TAKING NOTES"*
+11. 🔴 **Never deploy/push unless told THIS turn.** A past mention is not standing permission. — *"never fucking deploy... only because i mentioned it once"*
+12. 🔴 **Real e2e testing only — real browser, real mic, real backend.** No mocks, no unit-test/source-inspection substitutes. Test every page/button/flow/viewport. — *"TEST EVERYTHING, EVERY FUCKING PAGE EVERY BUTTON... NO MOCK NO BULLSHIT"*
+13. 🔴 **Match design pixel-perfect.** "Very close" is not done. Compare screenshots side by side, iterate to the threshold. — *"very close is not close ffs be more detail oriented"*
+14. 🔴 **Don't stop until it's fully done and he approves.** If you think you're done, you're not — keep finding bugs and finishing the chain. — *"IF YOU THINK YOU ARE DONE, YOU ARE FUCKING NOT, KEEP WORKING"*
+15. 🔴 **Stop making him repeat corrections.** Remember it, document it, change your approach — don't hit the same wall or re-present the same broken result. — *"REMEMBER THIS SHIT FOR FUCKS SAKE HOW MANY TIME DO WE HAVE TO TALK ABOUT THIS"*
+16. 🔴 **English in chat; Japanese only in the PR/doc.** Standing rule, stop making him say it. — *"I INSTRUCT YOU ENGLISH YOU SPEAK ENGLISH FFS"*
 
 ---
 
@@ -116,9 +122,13 @@ To refresh this list, see `refresh-procedure.md`.
 - Don't make him spoonfeed you — infer and execute the obvious step.
 
 ## 9. Memory & Durable Instructions
+- 🔴 Read every relevant project note index and linked note before acting. Notes may be stale or conflicting; latest raw user correction and current primary artifact win.
+- 🔴 Take durable notes continuously while reading long histories. Record every completed tranche and decisive correction immediately; never synthesize from memory at the end.
+- 🔴 GYST invocation is not completion. It is a hard gate requiring full reads, notes, durable updates, an execution receipt, corrected real work, and exact-artifact verification.
 - 🔴 Dump every learning, rule, method, credential into project/context files — never the hidden memory feature. He must never repeat himself.
 - 🔴 When corrected about behavior, update the durable instruction files immediately.
 - 🔴 Stop making him repeat the same correction — remember it, document it.
+- 🔴 Make compaction recovery explicitly runnable in both directions and chain full GYST execution every time: `$un-dumb-yourself before` must execute `$get-your-shit-together` fully, then preserve exact active-task state; `$un-dumb-yourself after` must reconstruct from the live workspace, session record, and capsule when available, then execute `$get-your-shit-together` fully again before resuming. `after` must work even when `before` was missed. Never trust the lossy generated summary as sufficient context.
 - Don't re-present the same broken result — change your approach when it isn't working.
 - Keep all sources/skills inside `~/.awesome-agent`, not scattered across `.agent`/`.codex`/`.claude`.
 - Document decisions/progress to disk when doing work.
@@ -160,6 +170,7 @@ To refresh this list, see `refresh-procedure.md`.
 
 ## 14. Device & System Safety
 - 🔴 Never touch his devices or system defaults — don't SwitchAudioSource, don't change audio input; select the device inside the browser sandbox.
+- 🔴 Never use macOS automation commands — no `osascript`, AppleScript, Automator, Finder/Terminal control, or other macOS GUI/system automation. `open` is allowed only when he explicitly requests it in the current turn. Otherwise surface artifact paths only; he controls macOS applications.
 - Don't start or stop servers — use the one already running.
 - Never read/process images larger than ~2000px — downscale first or you brick the machine.
 - Don't brick the PC — run tests granularly with proper worker limits, never a monster run or unmonitored infinite loop.
@@ -225,6 +236,24 @@ To refresh this list, see `refresh-procedure.md`.
 - Never clobber his manual edits during merge/rebase — diff-check, assess the damage, restore the exact pre-rebase working state. — *"DID YOU UNDO MY CHANGES, ASSESS THE DAMAGE FIRST"*
 - Don't drift off or swap the agreed setup/model/approach on your own — fix it in place. — *"WHY ARE WE SWITCHING? WE ARE PERFECTING GEMINI SETUP"*
 - Audit/investigation subagents are strictly read-only; throwaway repro scripts go in `/tmp`, never the repo; don't trust his paraphrase — read the real code.
+
+## 20. GYST Usage Failures Recovered 2026-07-23
+
+- `$get-your-shit-together` was repeatedly invoked but functionally ignored. Loading, naming, or summarizing the skill is not execution.
+- Before and after compression, recover exact known-good commands, setup, live state, notes, and settled decisions. Task prose or generated summaries alone are insufficient.
+- Every GYST run must leave an execution receipt: latest request; violated rules; files, notes, assets, and log ranges read; notes written; conflict resolution; source of truth; corrected action; exact verification artifact; unverified items.
+- Read every direct user message since the applicable cutoff. Exclude generated summaries, task notifications, system wrappers, subagent traffic, and tool output. Preserve a dated extraction and tranche ledger.
+- Authority order: latest raw user message → user-provided or explicitly named primary artifact → current live state → newer project notes → older project notes → generated summaries.
+- Main workflow first. No speculative checks, audit theater, infrastructure side quests, blind browser/API driving, or restarting settled work.
+- Preserve exact working commands and setup. Read protocol, logs, primary artifacts, and live state before driving tools.
+- Named artifact first. Answer binary status and surface exact APK/package/live/PR/dashboard/transcript/path before narrative.
+- “All”, “every”, “one by one”, and explicit repetition counts require exhaustive, individually traceable coverage and exact repetitions.
+- Local/runtime, CI, physical-device, browser, and reviewer-facing evidence are distinct layers; none substitutes for the requested layer.
+- Long-running work stays attached and supervised. React to authoritative exit/failure state; no terminal-output polling, blind retry, invented Goals, or status spam.
+- Missing backend or runtime evidence stays honestly unavailable. Never hardcode, fabricate, no-op, or hide the missing state.
+- Data and sync changes default additive and non-destructive. Recover real data first, document root cause, and persist prevention.
+- Tangible proof required. Reassurance, counts, cropped screenshots, scripts, source inspection, and plausible explanations are not the requested artifact.
+- Full extraction evidence and tranche ledger: `refresh-2026-07-23.md`.
 
 **Code & architecture**
 - Split large page files into components/logic/hooks, DRY-abstract repeats, prefer responsive layout over `position:absolute`, add no unrequested complexity (no gratuitous races).

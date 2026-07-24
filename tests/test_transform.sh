@@ -48,8 +48,13 @@ test_transform() {
         exit 1
     fi
 
-    if [ -e "$HOME_MOCK/.claude/skills" ] || [ -e "$HOME_MOCK/.gemini/skills" ]; then
-        echo "FAIL: Sync should not manage agent skill directories anymore"
+    if [ "$(readlink "$HOME_MOCK/.claude/skills/test_sync_flat")" != "../../.agents/skills/test_sync_flat" ]; then
+        echo "FAIL: Claude skill should be linked through global skill root"
+        exit 1
+    fi
+
+    if [ -e "$HOME_MOCK/.gemini/skills" ]; then
+        echo "FAIL: Gemini legacy skill root should not be managed"
         exit 1
     fi
 }
