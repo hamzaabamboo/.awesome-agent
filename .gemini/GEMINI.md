@@ -1,1 +1,1 @@
-/Users/vittayapalotai.tanyawat/.awesome-agent/shared/AGENTS.md
+../shared/AGENTS.md

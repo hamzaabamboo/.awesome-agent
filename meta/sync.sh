@@ -253,6 +253,10 @@ sync_agents_skill_links() {
 
     run mkdir -p "$agents_skills"
 
+    if [ ! -d "$BUILD_SKILLS_DIR" ]; then
+        return 0
+    fi
+
     find "$BUILD_SKILLS_DIR" -mindepth 1 -maxdepth 1 -type d | sort | while read -r skill_dir; do
         local skill_name
         local target
@@ -273,6 +277,10 @@ sync_claude_skill_links() {
 
     run mkdir -p "$claude_skills"
 
+    if [ ! -d "$BUILD_SKILLS_DIR" ]; then
+        return 0
+    fi
+
     find "$BUILD_SKILLS_DIR" -mindepth 1 -maxdepth 1 -type d | sort | while read -r skill_dir; do
         local skill_name
         local target
@@ -290,6 +298,25 @@ sync_claude_skill_links() {
 
         run ln -s "../../.agents/skills/$skill_name" "$target"
     done
+}
+
+sync_hermes_skills() {
+    local agents_skills="$TARGET_ROOT/.agents/skills"
+    local system_prompt
+
+    if [ "$TARGET_ROOT" != "$HOME" ]; then
+        log "Skipping Hermes config for non-home target: $TARGET_ROOT"
+        return 0
+    fi
+
+    if ! command -v hermes >/dev/null 2>&1; then
+        log "Hermes CLI not found; skipping Hermes skill registration."
+        return 0
+    fi
+
+    system_prompt="$(cat "$AGENTS_MD")"
+    run hermes config set skills.external_dirs "$agents_skills"
+    run hermes config set agent.system_prompt "$system_prompt" --force
 }
 
 render_agents_prompt() {
@@ -479,6 +506,7 @@ run mkdir -p "$TARGET_ROOT/.agent"
 link_path "$BUILD_SKILLS_DIR" "$TARGET_ROOT/.agent/skills"
 run mkdir -p "$TARGET_ROOT/.agents"
 sync_agents_skill_links
+sync_hermes_skills
 
 for agent in gemini claude; do
     run mkdir -p "$TARGET_ROOT/.$agent"

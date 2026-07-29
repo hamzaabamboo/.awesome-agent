@@ -118,7 +118,10 @@ test_prompt_unification() {
 
     assert_contains "$HOME_MOCK/.gemini/extensions/init-repo/commands/repo-setup.toml" 'description = "Agent command"'
     assert_contains "$HOME_MOCK/.gemini/extensions/init-repo/commands/repo-setup.toml" "# Repo Setup"
-    assert_contains "$AGENTS_FILE" "## REAL TESTING, PR EVIDENCE, AND SUBAGENTS"
+    assert_contains "$AGENTS_FILE" "## GET-YOUR-SHIT-TOGETHER PROTOCOL"
+    assert_contains "$AGENTS_FILE" "Inspect the actual source-of-truth artifact at full useful resolution"
+    assert_contains "$AGENTS_FILE" "Distinguish the object, its boundary, and any text or annotation overlaid on it"
+    assert_contains "$AGENTS_FILE" "User aggression or repeated correction means the current interpretation or evidence chain is wrong"
     assert_contains "$AGENTS_FILE" "Project-owned artifacts only"
     assert_contains "$AGENTS_FILE" "browser-hosted Claude/Claude in Chrome"
     assert_contains "$AGENTS_FILE" "Build the verification matrix from the affected behavior"

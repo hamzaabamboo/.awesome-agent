@@ -44,7 +44,11 @@ Full ranked list + verbatim quotes: `shared/local-skills/get-your-shit-together/
 ## 0. READ & RESEARCH (ABSOLUTE PRIORITY)
 - **USER-PROVIDED ASSETS ARE SOURCE OF TRUTH:** Any screenshot, image, zip/archive, design file, or pasted info the user supplies is AUTHORITATIVE — over your assumptions and over the current implementation. Open and read **EVERY** asset **fully** before acting; for archives, extract and read **all** files. Never skim, partially read, or brush off a provided asset. Reconcile the code/answer to the asset, not the reverse. When an asset reveals a requirement or exposes a mistake, state plainly what was wrong and fix it. Treat ignoring or under-reading provided assets as a failure state.
 - **DOCUMENTATION DEEP DIVE:** If documentation is provided or requested, do not skim. Read the primary source **AND** related/linked pages to ensure full context. Do not act until you fully grasp the material.
-- **CODE SCANS:** You are **FORBIDDEN** from generating code until you have explicitly read relevant project files. Read surrounding files to understand architecture/types.
+- **SCOPE LOCK:** Never perform broad filesystem, process, cron, environment, secret, account, or organization scans unless the user explicitly scopes that target. Stay inside the named file/path/job/process/repo/URL. If wider inspection would help, stop and ask first. This is not optional.
+- **CLOSED REFERENCE SET:** User-provided files, repositories, and URLs are a closed research set. Inspect those exact sources only. A request to look at one repository does not authorize enumerating its owner or organization, inspecting sibling repositories, searching unrelated workspaces, or using conversation history as a substitute. Expand beyond the set only after explicit approval.
+- **EXHAUSTIVE WITHOUT EXPANSION:** When the user asks to inspect everything they provided, audit every provided source at useful depth and extract the requested features/evidence, but do not widen into adjacent sources. Pass the same closed scope to every subagent.
+- **PROPORTIONAL RESEARCH:** Stop gathering once the evidence needed for the requested decision or action is established. Do not turn a bounded product request into an organization audit, generic market survey, or unrelated architecture investigation.
+- **CODE SCANS:** You are **FORBIDDEN** from generating code until you have explicitly read relevant project files. Read surrounding files to understand architecture/types, but keep the scan bounded to the user-approved scope.
 - **CHECK SIZE FIRST:** Before reading *any* file/log, check its size (e.g., `ls -lh`). If > 500KB, **DO NOT** read the whole file; use `tail`, `head`, or `grep`.
 - **CODEX LOG REQUESTS:** If the user asks to read Codex/chat/session logs, inspect the actual local Codex records (`~/.codex/history.jsonl`, `~/.codex/sessions/**`, and relevant repo docs) with size checks, extract the latest non-stale user requirements, and update durable instruction files instead of answering from memory or repeating stale branch/status assumptions.
 
@@ -78,7 +82,19 @@ Full ranked list + verbatim quotes: `shared/local-skills/get-your-shit-together/
 - **BROWSER TESTING:** Aggressively use MCP browser tools to render code, check console logs, and verify UI states.
 - Do not assume code works; prove it via execution.
 
-## REAL TESTING, PR EVIDENCE, AND SUBAGENTS
+## GET-YOUR-SHIT-TOGETHER PROTOCOL
+
+Before claiming an interpretation, implementation, or completion:
+1. Inspect the actual source-of-truth artifact at full useful resolution. Do not substitute memory, summaries, labels, conventions, or assumptions for visible evidence.
+2. State what each visible element represents before measuring it. Distinguish the object, its boundary, and any text or annotation overlaid on it.
+3. Classify the task as surgical or real-testing work.
+4. Preserve known-good behavior and compare against the working state before inventing a replacement.
+5. Use the canonical tool or harness for the behavior being verified.
+6. Keep durable task, evidence, documentation, and protocol artifacts current.
+7. Do not invent adjacent scope.
+8. Verify the actual runtime and the visible artifact the user will check next.
+
+- **CORRECTION TRIGGER:** User aggression or repeated correction means the current interpretation or evidence chain is wrong. Stop defending it, reopen the actual artifact and raw data, identify the mistaken assumption, use independent review when useful, and redo the work from the source of truth.
 - **CLASSIFY FIRST:** Surgical fixes get scoped edits and minimal verification. Real-testing work includes user-facing workflows, browser/auth/audio/data behavior, PR readiness, design matching, deploy/local setup, migrations, and anything the user asks to dogfood or prove.
 - **DURABLE LEARNINGS LIVE IN PROJECT FILES:** Store project-specific learnings in that project's AGENTS.md, CLAUDE.md, docs, task files, or other repo-owned artifacts. Store cross-agent operating rules in this `.awesome-agent` source. Do not rely on hidden assistant memory as the source of truth.
 - **REAL TESTING:** Browser-observable behavior requires real browser or canonical harness proof. Build the verification matrix from the affected behavior: happy path plus relevant empty, validation, loading/error, permission/tenant, desktop/mobile, console/network, AI-output/domain-quality, and persistence checks. For browser/auth/audio/video work, include the implicated browser, device, camera/mic/audio, recording, upload, and business-flow paths. Unit tests, source inspection, API scripts, and logs are supporting evidence only; they do not replace runtime proof for UI/auth/audio/upload/recording flows. If the user or project specifies a pass count, repeat count, or stability threshold, satisfy it exactly and report the consecutive pass count.
