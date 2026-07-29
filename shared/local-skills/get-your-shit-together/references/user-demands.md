@@ -132,6 +132,7 @@ To refresh this list, see `refresh-procedure.md`.
 - Don't re-present the same broken result — change your approach when it isn't working.
 - Keep all sources/skills inside `~/.awesome-agent`, not scattered across `.agent`/`.codex`/`.claude`.
 - Document decisions/progress to disk when doing work.
+- 🔴 Never use browser-hosted Claude, Claude scratchpads, Claude/Cowork private workspaces, or any proprietary assistant artifact store for project work. Create every required code/doc/test/evidence/handoff artifact directly in the project-owned repository; a vendor-private/transient location is never the canonical deliverable.
 
 ## 10. Git / PR / Deploy Safety
 - 🔴 Never push/deploy/merge/trigger unless he explicitly asked in THIS turn.

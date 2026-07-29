@@ -1,0 +1,23 @@
+{
+  "skill_name": "handing-off-pro-max",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I need to hand this repo to another agent after a multi-day bug investigation. Preserve every command, failed approach, dirty file, browser proof, and exact first resume action in docs.",
+      "expected_output": "A project-owned exhaustive handoff with the complete operational record, verification matrix, failures, and ordered continuation.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "Context almost full. Before compression, write down everything in your context and how to resume without guessing.",
+      "expected_output": "The handoff runs before the compaction capsule and captures exact current state, commands, artifacts, unknowns, and first action.",
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "Leave documentation for whoever picks up this UI verification project. No summary; include methodology and all traps.",
+      "expected_output": "A full methodology handoff distinguishes browser proof from weaker evidence and records each trap, recovery, and remaining frame/work item.",
+      "files": []
+    }
+  ]
+}

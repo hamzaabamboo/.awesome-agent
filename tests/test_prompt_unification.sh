@@ -119,12 +119,15 @@ test_prompt_unification() {
     assert_contains "$HOME_MOCK/.gemini/extensions/init-repo/commands/repo-setup.toml" 'description = "Agent command"'
     assert_contains "$HOME_MOCK/.gemini/extensions/init-repo/commands/repo-setup.toml" "# Repo Setup"
     assert_contains "$AGENTS_FILE" "## REAL TESTING, PR EVIDENCE, AND SUBAGENTS"
+    assert_contains "$AGENTS_FILE" "Project-owned artifacts only"
+    assert_contains "$AGENTS_FILE" "browser-hosted Claude/Claude in Chrome"
     assert_contains "$AGENTS_FILE" "Build the verification matrix from the affected behavior"
     assert_contains "$AGENTS_FILE" "If the user interrupts a wait or poll, stop polling immediately"
     assert_contains "$AGENTS_FILE" "Run commands one by one unless the user explicitly asks for batching"
     assert_contains "$AGENTS_FILE" "## Design Skill Invocation"
     assert_contains "$AGENTS_FILE" "Before proposing or implementing design work, invoke the relevant installed design skills"
     assert_contains "$AGENTS_FILE" "real-testing-evidence"
+    assert_contains "$AGENTS_FILE" "handing-off-pro-max"
     assert_not_contains "$AGENTS_FILE" "Do NOT run commands one by one"
     assert_not_contains "$AGENTS_FILE" "CHAIN"
     assert_not_contains "$AGENTS_FILE" 'Use `sleep` loops'
@@ -133,6 +136,11 @@ test_prompt_unification() {
     assert_contains "$SKILLS_TARGET/real-testing-evidence/SKILL.md" "## No Passive Waiting"
     assert_contains "$SKILLS_TARGET/real-testing-evidence/SKILL.md" "Do not use sleep loops as a substitute for work"
     assert_contains "$SKILLS_TARGET/real-testing-evidence/SKILL.md" "Run repo evidence, dogfood, screenshot, PR-body, task-plan, or UI-coverage verifier scripts"
+    assert_contains "$SKILLS_TARGET/handing-off-pro-max/SKILL.md" "## Handoff quality gate"
+    if [ ! -L "$CODEX_SKILLS_TARGET/handing-off-pro-max" ] || [ ! -e "$CODEX_SKILLS_TARGET/handing-off-pro-max/SKILL.md" ]; then
+        echo "FAIL: handing-off-pro-max was not linked into global skills"
+        exit 1
+    fi
 }
 
 test_prompt_unification

@@ -19,13 +19,14 @@ Both modes are first-class. Both must execute `$get-your-shit-together` in full.
 
 1. Stop starting new work.
 2. Load `$get-your-shit-together` and execute its entire procedure against the current task. Finish its instruction-stack reread, applicable-demand extraction, mistake confrontation, source-of-truth realignment, and durable-rule persistence before continuing.
-3. Read every user message since the previous capsule. Preserve exact wording for requirements, corrections, prohibitions, completion criteria, and current-turn authority.
-4. Inspect current authoritative state:
+3. Load `$handing-off-pro-max` and write the complete project-owned handoff before creating this compact recovery capsule. The handoff preserves everything needed by a successor; this capsule only preserves the immediate resume state.
+4. Read every user message since the previous capsule. Preserve exact wording for requirements, corrections, prohibitions, completion criteria, and current-turn authority.
+5. Inspect current authoritative state:
    - working directory, repository, branch, worktree status, and pre-existing dirty files;
    - files changed during this task and whether each change is verified;
    - running foreground command, browser/session state, external operation state, and latest real result;
    - artifacts already read, artifacts still unread, blockers, and unanswered questions.
-5. Write `/tmp/un-dumb-yourself/$CODEX_THREAD_ID.md`. Create the directory if needed. Replace the same thread file atomically. Use this exact structure:
+6. Write `/tmp/un-dumb-yourself/$CODEX_THREAD_ID.md`. Create the directory if needed. Replace the same thread file atomically. Use this exact structure:
 
 ```markdown
 # Recovery Capsule
@@ -63,8 +64,8 @@ Both modes are first-class. Both must execute `$get-your-shit-together` in full.
 - Remaining ordered work:
 ```
 
-6. Keep exact identifiers, paths, URLs, error text, counts demanded by the user, and binary statuses. Omit generic narrative.
-7. Persist durable rules or project decisions in their authorized repo-owned instruction/task files. Keep the capsule ephemeral; never commit it or substitute it for durable project documentation.
+7. Keep exact identifiers, paths, URLs, error text, counts demanded by the user, and binary statuses. Omit generic narrative.
+8. Persist durable rules or project decisions in their authorized repo-owned instruction/task files. Keep the capsule ephemeral; never commit it or substitute it for durable project documentation.
 
 ## `after`
 
@@ -79,8 +80,9 @@ Both modes are first-class. Both must execute `$get-your-shit-together` in full.
    - capsule;
    - generated compaction summary.
 6. Load `$get-your-shit-together` and execute its entire procedure against the reconstructed current task. Do not resume work until its instruction-stack reread, applicable-demand extraction, mistake confrontation, source-of-truth realignment, and durable-rule persistence are complete.
-7. Resume at `Immediate next action`. Do not restart completed work, rerun destructive/external actions, reopen settled decisions, or claim completion from the capsule.
-8. Update the capsule before the next compaction.
+7. Read the project-owned `handing-off-pro-max` artifact named by the capsule before resuming. If the capsule does not name one, locate the latest project handoff; if none exists, create it with `$handing-off-pro-max` before material work.
+8. Resume at `Immediate next action`. Do not restart completed work, rerun destructive/external actions, reopen settled decisions, or claim completion from the capsule.
+9. Update the capsule before the next compaction.
 
 ## Failure Conditions
 
