@@ -1,0 +1,4 @@
+interface:
+  display_name: "Look at the Screen"
+  short_description: "Inspect the actual visual artifact before reasoning"
+  default_prompt: "Use $look-at-the-screen to inspect the supplied screen or rendered UI directly before diagnosing or changing anything."

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Stop Inventing"
+  short_description: "Read every reference and follow it literally"
+  default_prompt: "Use $stop-inventing to read every authoritative reference completely and execute only what those sources require."

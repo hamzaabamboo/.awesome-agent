@@ -1,0 +1,4 @@
+interface:
+  display_name: "What Did I Say"
+  short_description: "Reconcile rapid-fire requests into one live todo"
+  default_prompt: "Use $what-did-i-say to re-read this session and reconcile every unresolved request before continuing."
