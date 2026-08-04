@@ -4,6 +4,8 @@
 
 Create two repo-local skills and a universal skill-invocation rule that prevent visual evidence, rapid-fire instructions, cumulative requirements, and skill gates from being ignored.
 
+Current correction task: eliminate reflexive agreement and acknowledgement phrases from the managed core prompt, require explicit error identification and corrective action before responding, sync the generated prompt targets, and verify the deployed text.
+
 Current request: recover every active instruction concerning all services from the actual Codex and Claude user-message history, reconcile it, and answer without guessing.
 
 Latest correction: the two-week Codex and Claude history read, complete skill-invocation audit, failure analysis, holistic reasoning, literal execution, and current-task documentation are mandatory for every skill invocation, not only `what-did-i-say` and not only the current session.
@@ -25,6 +27,10 @@ Latest correction: the two-week Codex and Claude history read, complete skill-in
 - Keep raw chat content and private history out of Git-managed artifacts unless explicitly requested.
 - Do not commit, push, deploy, open a PR, or upload anything in this turn.
 - Install the created skills into the managed agent environments so they appear in the skill interface; local configuration sync is authorized as the required completion step.
+- Do not use agreement or acknowledgement filler after a correction.
+- State the concrete mistake, reopen the source of truth, change the behavior or artifact, and report verification.
+- Modify the repo-owned prompt source rather than patching generated or external agent targets directly.
+- Sync the prompt change through the managed engine after tests pass.
 
 ## Status
 
@@ -35,6 +41,7 @@ Latest correction: the two-week Codex and Claude history read, complete skill-in
 - Two-week Codex and Claude audit: completed; temporary extracted history deleted.
 - Managed-agent sync: completed; all three skills generated under `.build/skills`, installed under `~/.agent/skills`, and linked under `~/.agents/skills`.
 - Cross-session every-skill requirement: implemented, validated, synced, and verified in generated and Claude-installed skill targets.
+- Reflexive-agreement correction: in progress; source prompt and sync path pending inspection.
 
 ## Verification
 
