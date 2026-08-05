@@ -125,6 +125,10 @@ test_prompt_unification() {
     assert_contains "$AGENTS_FILE" "NO REFLEXIVE AGREEMENT OR ACKNOWLEDGEMENT"
     assert_contains "$AGENTS_FILE" "CORRECTION RESPONSE GATE"
     assert_contains "$AGENTS_FILE" "perform the corrected action and verify its exact target before replying"
+    assert_contains "$AGENTS_FILE" "A bounded read is never a full read"
+    assert_contains "$AGENTS_FILE" 'record `1–EOF` coverage'
+    assert_contains "$AGENTS_FILE" "Every invoked skill is a full-read gate"
+    assert_contains "$AGENTS_FILE" 'read its complete `SKILL.md` and every required linked instruction'
     assert_contains "$AGENTS_FILE" "Project-owned artifacts only"
     assert_contains "$AGENTS_FILE" "browser-hosted Claude/Claude in Chrome"
     assert_contains "$AGENTS_FILE" "Build the verification matrix from the affected behavior"

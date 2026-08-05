@@ -16,6 +16,8 @@ Use `skills.sh` as the source of truth for non-local skills.
 ## Every Skill Invocation
 
 - Before executing any skill, create or update the current task's project-owned task document.
+- Before taking any action from a skill, read its `SKILL.md` completely from line 1 through EOF. Read every directly required linked instruction, reference, template, script, and asset completely before acting on it. Follow further required links until the skill's execution path is fully read. Skill metadata, summaries, prior familiarity, partial reads, and generated copies never substitute for the complete source.
+- Determine total lines before each skill or reference read. If any tool uses an offset or limit, maintain contiguous range coverage and continue immediately through EOF. Record `1–EOF` coverage in the task document. Any missing, overlapping, or unverified range blocks skill execution and blocks completion claims.
 - Read every direct user message from all Codex and Claude sessions covering the previous two weeks. Do not sample, keyword-search and stop, or rely on generated summaries.
 - Identify every skill invocation in that two-week corpus, read its surrounding request sequence, and determine what the agent subsequently missed, ignored, contradicted, displaced, or failed to verify.
 - Re-read every direct user message in the complete current session. Reconcile the current session with the two-week cross-session findings as one evolving specification.
