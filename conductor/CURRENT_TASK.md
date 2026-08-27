@@ -20,6 +20,7 @@ Repair agent setup for speed and token efficiency, install all Matt Pocock skill
 - Complete: query-first notes, fast GYST, bounded UDY recovery, all-Matt trigger routing, project precedence, and test restraint are in managed sources and generated prompt.
 - Complete: current task record reduced from 108 lines/13 KiB to 46 lines/3.0 KiB; GYST reduced from 53 lines/8.2 KiB to 27 lines/1.4 KiB.
 - Complete: existing prompt-unification and remote-skill tests pass; `git diff --check` passes; no test file created.
+- Complete: committed as `fa3edec` and pushed to `origin/main`; local and remote heads matched after push.
 
 ## Skill gates
 
@@ -44,4 +45,4 @@ Repair agent setup for speed and token efficiency, install all Matt Pocock skill
 
 ## Next action
 
-Read fast GYST, inspect exact dirty-file provenance and diff, stage only confirmed task files, commit, push, and verify local/remote head equality.
+No remaining task action. Preserve the two unrelated pre-existing untracked files.
