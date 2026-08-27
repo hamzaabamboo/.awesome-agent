@@ -20,7 +20,7 @@ Complete the full branch update from the live remote: pull the fetched `main`, r
 - All 37 Matt Pocock skill directories exist under `/Users/hamp/.agents/skills`; `setup-matt-pocock-skills/SKILL.md` is non-empty at 6.7K.
 - `hermes skills list --enabled-only` exited 0 and reported `0 hub-installed, 10 builtin, 175 local — 185 enabled shown`.
 - Managed prompt and skill links resolve to this repository; `tests/test_transform.sh`, `tests/test_prompt_unification.sh`, `tests/test_cleanup.sh`, `tests/test_remote_skills.sh`, and `tests/test_sync_args.sh` all exited 0.
-- Seven pre-existing GYST receipt files remain as untracked repository work and will be preserved in the final commit.
+- Seven pre-existing GYST receipt files were preserved in commit `648709e`.
 
 ## Skill gates
 
@@ -39,9 +39,9 @@ Complete the full branch update from the live remote: pull the fetched `main`, r
 - Mistake: the earlier repair skipped remote installation, reported from stale remote state, and stopped before proving the critical Matt skill target.
 - Source: live fetched refs, `conductor/CURRENT_TASK.md`, `shared/core_profile.md`, `shared/skill_system.md`, `meta/sync.sh`, `meta/install-remote-skills.sh`, `shared/remote-skills.txt`, managed skill directories, and existing checks.
 - Durable correction: `shared/core_profile.md` and `references/user-demands.md` now require the complete branch-update chain through clean-tree verification.
-- Action: full remote-enabled sync, all 37 Matt skill paths, effective catalogs, managed links, and existing checks are verified; stage intended changes, commit, push, refetch, and verify.
+- Action: full remote-enabled sync, all 37 Matt skill paths, effective catalogs, managed links, existing checks, commit, push, refetch, equal heads, and clean worktree are verified.
 - Verification target: Matt skill directories, Hermes catalog, source/generated prompt alignment, test results, local/remote equality, and `git status --short --branch`.
 
 ## Next action
 
-Stage the verified repository changes, commit, push `main`, refetch `origin`, and verify equal heads with an empty worktree.
+No remaining task action.
