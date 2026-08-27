@@ -1,25 +1,24 @@
 ---
 name: what-did-i-say
-description: Re-read and reconcile every direct user message from the previous two weeks of Codex and Claude sessions plus the complete current session into one authoritative, ordered todo before responding or continuing work. Audit every skill invocation and what subsequently went wrong, then execute the user's operative wording literally. Use when the user invokes `$what-did-i-say`, asks what they said or requested, sends multiple rapid-fire additions or corrections, says instructions were missed or ignored, refers to earlier or cross-session instructions, or expresses frustration that cumulative requirements, skill invocations, priorities, permissions, or explicit non-actions were lost.
+description: Re-read and reconcile every direct user message in the complete current session into one authoritative, ordered todo before responding or continuing work. Audit current-session skill invocations and what subsequently went wrong, then execute the user's operative wording literally. Never read prior sessions or other projects. Use when the user invokes `$what-did-i-say`, asks what they said or requested in this session, sends multiple rapid-fire additions or corrections, says instructions were missed or ignored, or expresses frustration that current-session requirements, skill invocations, priorities, permissions, or explicit non-actions were lost.
 ---
 
 # What Did I Say
 
-Treat the previous two weeks of Codex and Claude user history plus the current session as one evolving specification. Read all of it, reason across all of it, then execute what the user said as written.
+Treat the complete current-session user-message stream as one evolving specification. Read it in full, reason across it, then execute what the user said as written. This skill never reads prior sessions, Codex or Claude history, or another project's chats. Historical review is outside this skill's scope and requires a separately requested, current-project-scoped recovery/history procedure.
 
 ## Stop and Re-read
 
 1. Stop the active workflow.
-2. Read every direct user message from all Codex and Claude sessions covering the previous two weeks.
-3. Re-read every direct user message in the current session from the first task-defining message through the latest correction.
-4. Include rapid-fire messages, short fragments, attachments, skill invocations, answers to prior questions, objections, permission changes, and scope corrections.
-5. Exclude assistant summaries, generated compactions, tool output, subagent traffic, and stale interpretations as sources of user intent.
-6. For every skill invocation in the two-week corpus, read the complete surrounding request sequence and identify what the agent subsequently missed, ignored, contradicted, displaced, or failed to verify.
-7. Reopen any referenced artifact needed to interpret a message. Never fill a missing detail from memory when the session or artifact contains it.
-8. Think across the complete cross-session request stream before decomposing it. Resolve pronouns, fragments, repeated emphasis, sequencing, and dependencies from the whole history rather than message by message.
-9. Preserve the user's exact operative wording in the transient working ledger. Do not soften, narrow, summarize away, or substitute a more convenient interpretation.
+2. Read every direct user message in the current session from the first task-defining message through the latest correction.
+3. Include rapid-fire messages, short fragments, attachments, skill invocations, answers to prior questions, objections, permission changes, and scope corrections.
+4. Exclude assistant summaries, generated compactions, tool output, subagent traffic, and stale interpretations as sources of user intent.
+5. For every skill invocation represented in the current session, read the complete surrounding request sequence and identify what the agent subsequently missed, ignored, contradicted, displaced, or failed to verify.
+6. Reopen any referenced artifact needed to interpret a message. Never fill a missing detail from memory when the session or artifact contains it.
+7. Think across the complete current-session request stream before decomposing it. Resolve pronouns, fragments, repeated emphasis, sequencing, and dependencies from the whole session rather than message by message.
+8. Preserve the user's exact operative wording in the transient working ledger. Do not soften, narrow, summarize away, or substitute a more convenient interpretation.
 
-Do not answer from the latest message alone when preceding messages are still active.
+Do not answer from the latest message alone when preceding current-session messages are still active.
 
 ## Build the Live Request Ledger
 
@@ -37,6 +36,8 @@ Create or update a project-owned current-task document. Maintain an ordered todo
 - explicit non-actions
 
 Document every active request and preserve its complete operational meaning. Keep exact raw wording in transient session context unless the user explicitly requests verbatim persistence. Do not copy chat transcripts, session identifiers, or unrelated private history into repository files, skills, notes, fixtures, or evidence.
+
+Keep the durable ledger compact: one row or bullet per active request, replace superseded state, and stay under 200 lines and 16 KiB. Preserve detailed wording transiently in the current context; do not inflate the project record with narration or completed-message archaeology.
 
 Update the document immediately after every new request, correction, override, completed item, failure, changed artifact, or verification result. Do not defer documentation until handoff or completion.
 
@@ -87,11 +88,11 @@ For rapid-fire input received during execution, pause at the next safe boundary,
 
 Before reporting completion:
 
-1. Re-read every direct user message from the previous two weeks of Codex and Claude sessions and every direct user message in the current session again.
+1. Re-read every direct user message in the current session again.
 2. Reconcile each request against the ledger.
 3. Verify every non-superseded item is completed or explicitly blocked.
 4. Execute every invoked skill's completion gate.
 5. Inspect the exact artifact the user will check next.
 6. Report remaining items directly. Never hide them behind a summary or completion claim.
 
-No complete two-week Codex and Claude read plus current-session re-read means no claim that all instructions were handled.
+No complete current-session reread means no claim that all current-session instructions were handled.

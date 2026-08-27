@@ -8,9 +8,9 @@ The user's rule is "no scripts" for reading — meaning: never grep for a keywor
 ## Steps
 1. Isolate his words and pre-chunk:
    ```
-   scripts/isolate_user_messages.sh <workdir> [since_epoch]
+   scripts/isolate_user_messages.sh <workdir> <project_root> [since_epoch]
    ```
-   Omit `since_epoch` for all history. To refresh from the first use of a skill, resolve its earliest explicit invocation from the logs and pass that epoch. Produces source-specific JSONL, a chronologically merged `user_messages.jsonl`, readable `user_messages.txt`, and 100-message files under `<workdir>/chunks/`. Each record preserves source, timestamp, session, cwd when available, and exact text.
+   `project_root` is mandatory and bounds both Codex and Claude extraction to that project. Omit `since_epoch` for all history in that project. To refresh from the first use of a skill, resolve its earliest explicit invocation from the project-scoped logs and pass that epoch. Produces source-specific JSONL, a chronologically merged `user_messages.jsonl`, readable `user_messages.txt`, and 100-message files under `<workdir>/chunks/`. Each record preserves source, timestamp, session, cwd when available, and exact text.
 
 2. Create a durable refresh note before reading. Record cutoff derivation, source files, chunk assignments, and an append-only tranche ledger. After each chunk, append `{chunk, read fully, rules, strongest exact quotes, existing-note gaps}`. Never postpone note-taking until after all reading.
 
@@ -23,5 +23,5 @@ The user's rule is "no scripts" for reading — meaning: never grep for a keywor
 6. Persist. Update `references/user-demands.md`, this skill, and `~/.awesome-agent/shared/core_profile.md` from the evidence. Keep the refresh note as the audit trail. Promote project-specific rules into that project's `AGENTS.md`/`CLAUDE.md`/docs.
 
 ## Sources
-- `~/.codex/history.jsonl` — every Codex prompt (already user-only; no session mining needed for Codex).
-- `~/.claude/projects/**/*.jsonl` — Claude transcripts; user turns are `type:"user"`, `role:"user"`, string content, `isMeta` absent.
+- `~/.codex/state_5.sqlite` plus `~/.codex/history.jsonl` — the indexed thread table supplies the mandatory current-project session-id filter without scanning unrelated rollout files; history supplies user-only prompts for those IDs.
+- The encoded current-project directory under `~/.claude/projects/` — never every Claude project; user turns are `type:"user"`, `role:"user"`, string content, `isMeta` absent.

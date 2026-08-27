@@ -11,11 +11,12 @@ Run this skill before context compression, a model/agent/project-owner change, e
 
 ## Authority and scope
 
-1. Read the latest raw user request, current task instructions, project instructions, existing handoff docs, active task/issue/PR artifacts, and the source-of-truth artifact for the task.
-2. Check every file/log size before reading it. For files larger than 500 KB, use bounded targeted reads and name the range inspected.
-3. Treat the current workspace, live process/browser/external state, and latest raw user correction as authoritative over prior handoffs.
-4. Preserve pre-existing dirty changes. Name their ownership or mark it unknown; never attribute them to this task without evidence.
-5. Do not push, deploy, merge, post, or perform a new external write merely to make the handoff look complete.
+1. Read the canonical current-task record first. In repositories without an established task directory, use `<repo>/conductor/CURRENT_TASK.md`; in `.awesome-agent`, use `conductor/CURRENT_TASK.md`.
+2. Read the latest raw user request, current task instructions, project instructions, existing handoff docs, active task/issue/PR artifacts, and the source-of-truth artifact for the task.
+3. Check every file/log size before reading it. For files larger than 500 KB, use bounded targeted reads and name the range inspected.
+4. Treat the current workspace, live process/browser/external state, and latest raw user correction as authoritative over prior handoffs.
+5. Preserve pre-existing dirty changes. Name their ownership or mark it unknown; never attribute them to this task without evidence.
+6. Do not push, deploy, merge, post, or perform a new external write merely to make the handoff look complete.
 
 ## Required investigation
 
@@ -35,6 +36,8 @@ If history was read, append a tranche ledger while reading. State the source, ti
 ## Write the handoff
 
 Write it to the project-owned documentation location. If no established location exists, create `docs/HANDOFF_YYYY-MM-DD.md` at the project/umbrella-repo level, never inside a deployable package unless that package owns the documentation. Use a descriptive title.
+
+Update the canonical current-task record in place before writing this full handoff and again after the handoff is verified. The handoff is a separate full continuation artifact; it must not replace the live record, append to a dated `CURRENT` receipt, or create another competing current-task document.
 
 Use this structure. Do not omit a section; write `None`, `Not applicable`, or `Unknown — reason` only after checking.
 

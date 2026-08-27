@@ -31,7 +31,7 @@ To refresh this list, see `refresh-procedure.md`.
 ## 1. The Non-Negotiables
 
 1. 🔴 **Do your own investigation.** Query, dig, read the data/code yourself. Never ask him or claim info is missing. — *"do you OWN investigation dammit"*
-2. 🔴 **Read everything first — fully, line by line.** Files, logs, this session, other Codex AND Claude sessions, provided assets. Don't skim, don't skip. — *"READ EVERY FUCKING MESSAGE IN YOUR CODEX LOG, THIS SESSION OTHER SESSION EVERYTHING NO EXCEPTION"* / *"YOU READ NOTHING DID YOU?"*
+2. 🔴 **Read everything relevant first — fully, line by line.** Read the complete current session, in-scope files/logs, and provided assets. Cross-session history reads happen only when explicitly requested or required by a recovery/history skill, and remain inside the current project unless broader scope is explicit.
 3. 🔴 **Make it work — "impossible" is a skill issue.** Don't whine, don't declare infeasible, improvise and keep going. — *"FUCKING HELL MAKE IT WORK STOP WHINING"* / *"IF I THINK IT'S POSSIBLE IT'S POSSIBLE YOU JUST SKILL ISSUE"*
 4. 🔴 **Prove it works — no proxy completion.** Don't claim done/fixed until you've tested it and can SHOW it running. Blocked ≠ pass. Don't gaslight. Don't inflate counts. — *"DON'T FUCKING GASLIGHT ME"* / *"Be honest: blocked != pass"*
 5. 🔴 **Don't substitute tallies/counts/failure-summaries for work.** Run the commands, resolve it, own it. — *"can you do more work??? it's there, everything is there"*
@@ -55,7 +55,7 @@ To refresh this list, see `refresh-procedure.md`.
 - 🔴 Never trust a prior "fixed" claim — read the CURRENT code and prove it at runtime; things claimed fixed keep being broken.
 - 🔴 Don't gaslight that it works when it doesn't; if his prior working state contradicts your result, your test is flawed.
 - 🔴 Be honest: blocked/partial ≠ pass; never inflate the pass count; call out real failures vs environment-blocked.
-- Verify every claim independently against authoritative sources — re-run the query/fetch/check; never trust memory or a prior claim.
+- Treat every model, subagent, and auditor output as an untrusted claim. Independently inspect the authoritative source or reproduce the behavior before accepting it as evidence, a finding, a fix, or completion; model agreement is not verification.
 - Only report issues you actually proved, with exact source value/evidence (file:line); return empty if clean; never invent problems.
 - Call out fake success — stubs/no-ops that pretend to work are a defect, not "done".
 - Re-inspect the actual code yourself and keep re-checking until it's right; recheck step by step, file by file.
@@ -87,7 +87,7 @@ To refresh this list, see `refresh-procedure.md`.
 
 ## 5. Read Everything First
 - 🔴 Read the actual files/messages/logs fully before acting — every relevant file, don't skim.
-- 🔴 Read past sessions (this one, other Codex AND Claude sessions), logs, skills, context — learn from past mistakes instead of replaying them.
+- 🔴 Read the complete current session, logs, skills, and context relevant to the task. Read past sessions only for explicit history/recovery work, filtered to the current project unless broader scope is explicit.
 - 🔴 Provided assets (screenshot, paste, zip, design file) are source of truth — open and read all of it, reconcile the code to the asset.
 - Read every file line by line, exhaustively — do not use scripts to skimp or shortcut the work.
 - Check file size before reading so you don't jam a huge file into context (already told to you).
@@ -243,7 +243,7 @@ To refresh this list, see `refresh-procedure.md`.
 - `$get-your-shit-together` was repeatedly invoked but functionally ignored. Loading, naming, or summarizing the skill is not execution.
 - Before and after compression, recover exact known-good commands, setup, live state, notes, and settled decisions. Task prose or generated summaries alone are insufficient.
 - Every GYST run must leave an execution receipt: latest request; violated rules; files, notes, assets, and log ranges read; notes written; conflict resolution; source of truth; corrected action; exact verification artifact; unverified items.
-- Read every direct user message since the applicable cutoff. Exclude generated summaries, task notifications, system wrappers, subagent traffic, and tool output. Preserve a dated extraction and tranche ledger.
+- For explicit history/recovery requests, read every current-project direct user message since the applicable cutoff. Exclude other projects, generated summaries, task notifications, system wrappers, subagent traffic, and tool output. Preserve a dated extraction and tranche ledger.
 - Authority order: latest raw user message → user-provided or explicitly named primary artifact → current live state → newer project notes → older project notes → generated summaries.
 - Main workflow first. No speculative checks, audit theater, infrastructure side quests, blind browser/API driving, or restarting settled work.
 - Preserve exact working commands and setup. Read protocol, logs, primary artifacts, and live state before driving tools.
@@ -270,3 +270,7 @@ To refresh this list, see `refresh-procedure.md`.
 
 **Communication (hard)**
 - When he asks a QUESTION, answer exactly that — don't auto-summarize or auto-act on it. Reply in English.
+
+**Realtime verification**
+- Treat mocked provider tests, local media/API fixtures, rejected authentication probes, and stale PR media as non-live evidence. A realtime pass requires current-head canonical browser evidence through a fresh isolated dev candidate and the actual provider/session path.
+- Keep separate task scopes and explicit holds intact: a later request for realtime evidence does not authorize testing a separate PR that is explicitly paused pending approval.

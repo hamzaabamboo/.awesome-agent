@@ -1,25 +1,34 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-OUT="${1:?usage: isolate_user_messages.sh <out_dir> [since_epoch]}"
-SINCE_EPOCH="${2:-0}"
+OUT="${1:?usage: isolate_user_messages.sh <out_dir> <project_root> [since_epoch]}"
+PROJECT_ROOT="${2:?usage: isolate_user_messages.sh <out_dir> <project_root> [since_epoch]}"
+SINCE_EPOCH="${3:-0}"
 SINCE_ISO="$(date -u -r "$SINCE_EPOCH" '+%Y-%m-%dT%H:%M:%SZ')"
+CLAUDE_PROJECT_SLUG="$(printf '%s' "$PROJECT_ROOT" | sed 's/[^[:alnum:]_-]/-/g')"
+CLAUDE_PROJECT_DIR="$HOME/.claude/projects/$CLAUDE_PROJECT_SLUG"
+SQL_PROJECT_ROOT="${PROJECT_ROOT//\'/\'\'}"
 
 mkdir -p "$OUT"
 
-jq -c --argjson since "$SINCE_EPOCH" '
-  select(.ts >= $since)
+sqlite3 "$HOME/.codex/state_5.sqlite" \
+  "SELECT id FROM threads WHERE cwd = '$SQL_PROJECT_ROOT';" \
+  > "$OUT/codex_session_ids.txt"
+
+jq -c --argjson since "$SINCE_EPOCH" --rawfile session_ids "$OUT/codex_session_ids.txt" '
+  ($session_ids | split("\n") | map(select(length > 0))) as $ids
+  | select(.ts >= $since and (.session_id as $id | $ids | index($id)))
   | {
       source: "codex",
       epoch: .ts,
       timestamp: (.ts | strftime("%Y-%m-%dT%H:%M:%SZ")),
       session_id,
-      cwd: null,
+      cwd: "'"$PROJECT_ROOT"'",
       text
     }
 ' "$HOME/.codex/history.jsonl" > "$OUT/codex_user.jsonl"
 
-find "$HOME/.claude/projects" -type f -name '*.jsonl' ! -path '*/subagents/*' -print0 \
+find "$CLAUDE_PROJECT_DIR" -type f -name '*.jsonl' ! -path '*/subagents/*' -print0 \
   | xargs -0 jq -c --arg since "$SINCE_ISO" '
       select(
         .type == "user"
@@ -28,6 +37,7 @@ find "$HOME/.claude/projects" -type f -name '*.jsonl' ! -path '*/subagents/*' -p
         and (.isCompactSummary // false | not)
         and (.promptSource // "") != "system"
         and (.timestamp // "") >= $since
+        and (.cwd // "'"$PROJECT_ROOT"'") == "'"$PROJECT_ROOT"'"
       )
       | .message.content as $content
       | (

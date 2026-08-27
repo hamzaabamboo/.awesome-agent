@@ -126,7 +126,7 @@ test_prompt_unification() {
     assert_contains "$AGENTS_FILE" "CORRECTION RESPONSE GATE"
     assert_contains "$AGENTS_FILE" "perform the corrected action and verify its exact target before replying"
     assert_contains "$AGENTS_FILE" "A bounded read is never a full read"
-    assert_contains "$AGENTS_FILE" 'record `1–EOF` coverage'
+    assert_contains "$AGENTS_FILE" "This does not authorize selecting unrelated files or expanding GYST into broad research"
     assert_contains "$AGENTS_FILE" "Every invoked skill is a full-read gate"
     assert_contains "$AGENTS_FILE" 'read its complete `SKILL.md` and every required linked instruction'
     assert_contains "$AGENTS_FILE" "Project-owned artifacts only"
@@ -136,6 +136,16 @@ test_prompt_unification() {
     assert_contains "$AGENTS_FILE" "Run commands one by one unless the user explicitly asks for batching"
     assert_contains "$AGENTS_FILE" "## Design Skill Invocation"
     assert_contains "$AGENTS_FILE" "Before proposing or implementing design work, invoke the relevant installed design skills"
+    assert_contains "$AGENTS_FILE" "## Canonical Current-Task Record and Continuation Recovery"
+    assert_contains "$AGENTS_FILE" 'In this repository the canonical path is `conductor/CURRENT_TASK.md`'
+    assert_contains "$AGENTS_FILE" "check Goal state when available"
+    assert_contains "$AGENTS_FILE" "Replace the canonical record in place"
+    assert_contains "$AGENTS_FILE" "Historical receipts and full handoffs are evidence, not live task authority"
+    assert_contains "$AGENTS_FILE" "Do not inspect other sessions merely because a skill was invoked"
+    assert_contains "$AGENTS_FILE" "Keep that read inside the current project unless the user explicitly names a broader scope"
+    assert_not_contains "$AGENTS_FILE" "Read every direct user message from all Codex and Claude sessions covering the previous two weeks"
+    assert_contains "$AGENTS_FILE" '$what-did-i-say` is current-session-only and never authorizes prior-session or cross-project history reads.'
+    assert_not_contains "$AGENTS_FILE" "previous two weeks of current-project Codex and Claude sessions"
     assert_contains "$AGENTS_FILE" "real-testing-evidence"
     assert_contains "$AGENTS_FILE" "handing-off-pro-max"
     assert_not_contains "$AGENTS_FILE" "Do NOT run commands one by one"
@@ -147,6 +157,20 @@ test_prompt_unification() {
     assert_contains "$SKILLS_TARGET/real-testing-evidence/SKILL.md" "Do not use sleep loops as a substitute for work"
     assert_contains "$SKILLS_TARGET/real-testing-evidence/SKILL.md" "Run repo evidence, dogfood, screenshot, PR-body, task-plan, or UI-coverage verifier scripts"
     assert_contains "$SKILLS_TARGET/handing-off-pro-max/SKILL.md" "## Handoff quality gate"
+    assert_contains "$SKILLS_TARGET/handing-off-pro-max/SKILL.md" "Read the canonical current-task record first"
+    assert_contains "$SKILLS_TARGET/get-your-shit-together/SKILL.md" "Fast correction loop. Fix latest failure; do not excavate history."
+    assert_contains "$SKILLS_TARGET/get-your-shit-together/SKILL.md" 'use `$what-did-i-say`.'
+    assert_contains "$SKILLS_TARGET/get-your-shit-together/SKILL.md" "GYST reads none of those broader corpora itself"
+    assert_contains "$SKILLS_TARGET/get-your-shit-together/SKILL.md" "Replace the canonical receipt"
+    assert_contains "$SKILLS_TARGET/un-dumb-yourself/SKILL.md" "Check Goal state when available"
+    assert_contains "$SKILLS_TARGET/what-did-i-say/SKILL.md" "This skill never reads prior sessions, Codex or Claude history, or another project's chats."
+    assert_contains "$SKILLS_TARGET/what-did-i-say/SKILL.md" "Read every direct user message in the current session"
+    assert_not_contains "$SKILLS_TARGET/what-did-i-say/SKILL.md" "previous two weeks"
+    assert_not_contains "$SKILLS_TARGET/what-did-i-say/SKILL.md" "current-project Codex and Claude sessions"
+    for skill_file in "$SKILLS_TARGET"/*/SKILL.md; do
+        assert_not_contains "$skill_file" "previous two weeks"
+        assert_not_contains "$skill_file" "previous two-week"
+    done
     if [ ! -L "$CODEX_SKILLS_TARGET/handing-off-pro-max" ] || [ ! -e "$CODEX_SKILLS_TARGET/handing-off-pro-max/SKILL.md" ]; then
         echo "FAIL: handing-off-pro-max was not linked into global skills"
         exit 1
