@@ -80,6 +80,7 @@ To refresh this list, see `refresh-procedure.md`.
 - 🔴 Never declare done prematurely — keep iterating, keep finding bugs/improvements.
 - Do real work, not busywork — no 30 minutes of nothing, no slacking.
 - Just do the work — don't ask him to approve every step; plow through and unblock yourself.
+- If one harmless local tool path is blocked by a permission guard, use the normal approved terminal/file/browser path instead of asking him to authorize routine analysis.
 - Actually fix the problem — don't come back having done nothing.
 - Stop bitching/making excuses — just continue and get it done.
 - Don't be lazy — do the full scope across all repos and populate real test data yourself.
@@ -118,6 +119,7 @@ To refresh this list, see `refresh-procedure.md`.
 - 🔴 You are the automation — never offload the real interaction to a monitor loop or background scheduler.
 - Do the work in THIS session, one by one — no offloading the main work to background tasks/scheduling/unnecessary parallelism. (Parallel subagents for thorough checking are welcome.)
 - Run commands one at a time — batching/looping commands breaks the permission flow.
+- 🔴 Never use shell pipes in the Hermes environment — use direct commands, native tools, or explicit intermediate files instead. — *"Never pipe shit in a Hermes environment EVER"*
 - Be autonomous — when something's broken, iterate and fix; don't just report and stop. Pick up from the last session and keep going.
 - Don't make him spoonfeed you — infer and execute the obvious step.
 
@@ -138,6 +140,7 @@ To refresh this list, see `refresh-procedure.md`.
 - 🔴 Never push/deploy/merge/trigger unless he explicitly asked in THIS turn.
 - 🔴 Certain repos are strictly read-only — never write/commit/push there; on inspection-only repos, only git log/show/grep/Read.
 - On any "update / current / ready / safe to migrate" question: `git fetch` (and `gh` for PR state) FIRST; never reason from a stale ref.
+- A branch update is incomplete until intended changes are committed and pushed, local and remote heads are verified equal, and the worktree is clean.
 - All `/code` work uses the `hamzaabamboo` GitHub identity (hard rule); never add agent attribution to commits/PRs.
 - Squash granular commits; keep one branch locally, clean working tree, everything committed/pushed to the right branch.
 - Never commit screenshots/videos/docs into the repo — host media externally (gh image upload) and embed in the PR body; docs stay outside the project folder.

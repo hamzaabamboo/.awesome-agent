@@ -2,7 +2,16 @@
 
 set -euo pipefail
 
-real_codex="${PXPIPE_CODEX_BIN:-/opt/homebrew/bin/codex}"
+if [ -n "${PXPIPE_CODEX_BIN:-}" ]; then
+    real_codex="$PXPIPE_CODEX_BIN"
+elif [ -x /opt/homebrew/bin/codex ]; then
+    real_codex=/opt/homebrew/bin/codex
+elif [ -x /usr/local/bin/codex ]; then
+    real_codex=/usr/local/bin/codex
+else
+    echo "codex executable not found at /opt/homebrew/bin/codex or /usr/local/bin/codex. Set PXPIPE_CODEX_BIN to its path." >&2
+    exit 1
+fi
 host="${PXPIPE_HOST:-127.0.0.1}"
 port="${PXPIPE_PORT:-47821}"
 base_url="http://$host:$port"

@@ -24,12 +24,19 @@ Full ranked list + verbatim quotes: `shared/local-skills/get-your-shit-together/
 - **Do your own investigation** — read the data/code/logs yourself; never guess, assume, or ask me for what you can find.
 - **Read everything relevant first, fully, line by line** — current-session messages, in-scope files/logs, and every provided asset. Ordinary skills, including `$what-did-i-say`, never inspect prior sessions or other projects. Only a separately requested recovery/history task may read prior sessions, and it remains current-project-scoped unless broader scope is explicit.
 - **Query notes; do not ingest them wholesale** — start from the canonical task record and relevant note index, then open only entries whose scope matches the active task. Keep live records compact, replace stale status in place, and split durable knowledge by topic before files become context liabilities. Continuous tranche notes apply only to explicitly authorized long history/log reads.
+- **Interpret file-backup requests literally** — inspect the named source and make an additive file copy; do not substitute sync settings or a backup lecture for the requested copy.
+- **Exhaust canonical access paths before returning a device blocker** — if one native interface fails, inspect the alternate standard file/device interfaces and establish the actual failing layer.
 - **Make it work — "impossible/too big" is a skill issue.** Adapt, serialize, improvise; don't whine, don't stop until it works and I approve.
 - **Prove it in a real running browser you look at yourself** — no mocks, no script-as-proof, no source-inspection substitute; blocked ≠ pass; never gaslight or inflate a count.
+- **When the user says their Chrome is already logged in, connect to that actual Chrome session and verify its live tab before treating authentication as blocked; never substitute an isolated browser profile.**
+- **When the user explicitly says to open or launch Chrome, execute the approved Chrome open path immediately; do not repeat a permission request or hand routine browser recovery back to the user.**
+- **When Chrome diagnostics are positive but the family selector is unavailable, treat that as connector discovery failure—not logout; inspect the connected Chrome extension/pipe/session metadata and use the live Chrome bridge before reporting a blocker.**
 - **No tallies/counts/failure-summaries as a substitute for work; no proxy completion** — plausible ≠ verified.
 - **Model and subagent output is untrusted until checked.** Independently inspect the authoritative artifact or reproduce the behavior before accepting any generated claim as evidence, a finding, a fix, or a completion signal; model agreement is not verification.
 - **One canonical live task record** — use the repository task system's `CURRENT_TASK.md` path, replace it in place, and never create parallel current records or append new receipts to the live record. Historical receipts and handoffs are evidence only.
 - **You are the automation** — never run a script then wait/sleep/poll/loop; pilot the browser/interaction yourself; run commands one at a time.
+- **Permission-guard recovery** — if one harmless local tool path is blocked, use the normal approved terminal/file/browser path; do not ask Ham to authorize routine analysis.
+- **A branch update is complete only after the full chain** — fetch the live remote first, reconcile the branch with its latest base without clobbering local work, run checks, commit intended changes, push the updated branch, and verify equal local/remote heads with a clean working tree.
 - **Stay strictly in scope** — only what I asked, only the named files; don't break working code, re-add removed things, reopen settled decisions, or open unrequested PRs.
 - **Never deploy/push/merge/external-write unless I said so THIS turn**; a past mention is not permission; read-only/inspection repos stay untouched.
 - **Never touch my devices/system/audio defaults**; don't SwitchAudioSource, don't start/stop servers, don't brick the machine.
@@ -77,6 +84,7 @@ Full ranked list + verbatim quotes: `shared/local-skills/get-your-shit-together/
 - **TOOLS FIRST:** Prioritize native MCP tools (File Read/Edit) over ad-hoc shell commands.
 - **DISCRETE COMMANDS:** Run commands one by one unless the user explicitly asks for batching or the command is an established single project script. Inspect each result before deciding the next command.
 - **LIVE-STATE CORRECTIONS:** Treat a user statement such as "I reconnected" as a new state change. Re-run the exact blocked operation only after that message; never describe an earlier retry as testing the new state.
+- **NO SHELL PIPES:** Never use shell pipes in the Hermes environment. Use direct commands, native tools, or explicit intermediate files instead.
 - **NECESSITY ONLY:** Do not use the terminal for exploration if file reading suffices.
 
 ## 3. Context Hygiene
@@ -158,3 +166,8 @@ This repository is a **Centralized AI Agent Configuration Manager**. It aims to 
 ## Realtime PR verification boundary
 - Current realtime claims require current-head evidence from the canonical headed browser and real provider/session path. Mocked provider integration suites, local media/API fixtures, rejected unauthenticated probes, and historical PR-body videos remain supporting or blocked evidence only.
 - For interview E2E, use only a fresh isolated dev candidate created through the approved UI/harness when current authorization permits it. Do not reuse historical standby candidates and do not hit raw interview APIs as a substitute for driving the UI.
+## Browser Session Invariant
+
+- Use exactly one isolated `agent-browser` session for a task. Reuse that session for every browser action, tab, navigation, screenshot, and print operation. Never launch a second session or parallel browser. If the session is closed for device safety, stop browser work and continue only with file-based checks unless the user explicitly authorizes a new session.
+- If a task already has an existing user game tab and a one-tab invariant, never run `open-chrome-window.js`, `open ... --new-window`, or create a recovery tab when page attachment hangs. Reuse the existing selected/user tab or stop at the connector layer; never trade a stale handle for an unrequested blank window.
+- When the user explicitly authorizes a Chrome gateway restart after a bridge or page-layer failure, run a bounded restart protocol: inspect the exact `ChatGPT for Chrome` host and `/tmp/codex-browser-use` socket holders, remove only explicitly identified unheld stale socket pathnames, terminate only the active extension-host process, verify Chrome regenerates it and the same game-tab inventory remains, then attempt one screenshot. Never kill Chrome, create a tab/window/profile/session, or perform a page action without visual proof; record the exact error if the page layer still times out.
