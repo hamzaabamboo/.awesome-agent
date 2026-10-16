@@ -21,7 +21,7 @@ Fast correction loop. Fix latest failure; do not excavate history.
 
 - Multiple current-session messages may conflict or have been lost: use `$what-did-i-say`.
 - Compaction lost operational state: use `$un-dumb-yourself`.
-- Notes or recovery paths are bloated, irrelevant, or causing repeated compaction: use `$unfuck-yourself`.
+- The user requests a full failure/process audit, corrections keep failing, or context/recovery problems prevent progress: use `$unfuck-yourself` to trace causes across the affected process and verify repairs. The fast correction receipt must not replace that audit; document refactoring requires a demonstrated causal need.
 - Prior-session history is needed: require an explicit history request and use the project-scoped history procedure.
 
 GYST reads none of those broader corpora itself. Project protocol governs execution. Aggression signals a broken rule, not permission expansion.
