@@ -39,7 +39,7 @@ Full ranked list + verbatim quotes: `shared/local-skills/get-your-shit-together/
 - **A branch update is complete only after the full chain** — fetch the live remote first, reconcile the branch with its latest base without clobbering local work, run checks, commit intended changes, push the updated branch, and verify equal local/remote heads with a clean working tree.
 - **Stay strictly in scope** — only what I asked, only the named files; don't break working code, re-add removed things, reopen settled decisions, or open unrequested PRs.
 - **Never deploy/push/merge/external-write unless I said so THIS turn**; a past mention is not permission; read-only/inspection repos stay untouched.
-- **Never touch my devices/system/audio defaults**; don't SwitchAudioSource, don't start/stop servers, don't brick the machine.
+- **Never touch my devices/system/audio defaults**; don't SwitchAudioSource or alter system services. **Project-local development servers are authorized for implementation and browser verification:** check the requested port first; if free, start or restart the project's normal dev command without asking. If occupied, reuse the matching project server or choose a free port; never kill or replace an unrelated listener.
 - **Never use macOS automation commands:** `osascript`, AppleScript, Automator, Finder/Terminal control, and all macOS GUI/system automation are permanently forbidden. The `open` command is allowed only when the user explicitly requests it in the current turn. Otherwise surface artifact paths only; the user controls macOS applications. **When `open` is authorized for a URL, route it to the browser profile that matches the content's account: work content to the work profile, personal content to the personal profile, never the default handler and never the agent/test browser.** Determine the mapping from the browser's own profile metadata before opening; it is discoverable on disk, so neither guessing nor asking is acceptable. Record the machine-specific profile map in the project's own rules file, not as a session note.
 - **A provided document is not read until its rules are written into the harness.** When the user hands over onboarding/handoff material, reading it and reporting back is underperformance — extract every operative rule and persist it into the project's own instruction files in the same turn. The measure is that a future session with no memory of the document behaves correctly.
 - **Before declaring a resource inaccessible, search for a copy you already obtained.** Prior session records, subagent outputs, and tool-output directories routinely hold an already-exported asset (a design comp, a dump, a screenshot). On 2026-08-25 an entire stretch was spent diagnosing a Figma token while the exported frame sat on disk from an earlier subagent run in the same session. Search the chat log and output dirs first; a credential problem is the last hypothesis, not the first.
@@ -55,7 +55,7 @@ Full ranked list + verbatim quotes: `shared/local-skills/get-your-shit-together/
 - **Hard limits:** never wait/sleep >3s as a substitute for checking; never fire an unmonitored background task or use `watch`/`gh run watch`/`tail -f` (poll with a bounded until-loop); for long-running CLI work, run the real process in the foreground and react to exit/error only, not by repeatedly polling terminal output or spamming status; never run tests without thread/parallelism caps (it bricks the machine); never touch audio (BlackHole preset, pass `--mute-audio`) or trigger sudo/OS password prompts; during browser testing NEVER click/submit/navigate `mailto:`, `tel:`, or any non-http(s) href (each click opens the user's real Mail/native app) — verify by reading the href/composed URL via JS eval only, and pass this prohibition into every browser-testing subagent prompt; always launch agent-browser/Chromium with `AGENT_BROWSER_ARGS="--use-mock-keychain,--password-store=basic"` (prefix every agent-browser command inline) — a default Chromium launch hits the macOS Keychain ("Chromium Safe Storage") and pops an OS password prompt; pass this into every browser-testing subagent prompt too.
 - **His messages stay in the conversation. Never copy them into repo files.** Do not quote his chat verbatim in docs, receipts, notes, commit messages, PR bodies or code comments — record the requirement or defect as a neutral technical statement instead, keeping every engineering detail (paths, line numbers, measurements, verdicts) and losing the wording. Repo files get committed, read by other people, and live forever. This is doubly critical because his messages routinely contain credentials: on 2026-08-03 an extraction of his history to `/tmp` captured a Sentry token and a Slack webhook URL, and verbatim quotes were being pasted into `docs/` that would have been committed. When mining history, purge the extraction the moment it has been used, and scan any file you wrote for token/webhook/key patterns before finishing.
 - **Browser sessions are cleaned up, one per task, and never the user's own browser.** Run `agent-browser session list` before starting browser work and again before finishing, and `agent-browser close --all` (or close the exact sessions you opened) when done. Never spawn a session per scenario — pin ONE named session for the whole task. Abandoned sessions are not harmless: on 2026-08-03 seventeen leftover sessions filled the disk to 233 MB free, killed the running dev server mid-task and bricked the machine; closing them recovered 20 GB. If a console read or tab URL shows a project you are not working on, the browser is NOT isolated — stop immediately, do not "note it and continue". Never drive the user's real Chrome (including Claude-in-Chrome) unless he asks for it in the current turn.
-- **Kill what you start, and check the machine before heavy work.** Every server, watcher and background process you launch gets killed by you. Do not restart a dev server that died — find out why it died and report it. Run `df -h` before builds, full test suites or screenshot sweeps, and never run them on a full volume. Before blaming the user's data (Docker, caches, media) for a resource problem, enumerate your own processes and sessions first.
+- **Manage owned processes, and check the machine before heavy work.** Stop temporary servers, watchers and background processes you launched when no longer needed, unless the user authorized leaving them running. An unavailable project dev server does not require another permission request: inspect its available exit/error evidence and port state, then restart on a free port for the active task. Missing historical process output does not block startup; report an unknown exit cause honestly. If startup fails again, inspect the new error and fix the cause rather than blindly relaunching. Never stop pre-existing or unrelated services. Run `df -h` before builds, full test suites or screenshot sweeps, and never run them on a full volume. Before blaming the user's data (Docker, caches, media) for a resource problem, enumerate your own processes and sessions first.
 - **Test isolation & secrets:** mint fresh throwaway test resources; never consume, submit, "steal," or pollute real prod data, and never touch anything outside dev; never commit API keys/secrets — scan diffs for them.
 - **No unsolicited test creation:** do not add tests unless the user requests them, the project protocol requires them, or the changed behavior cannot be safely verified with the existing harness. Verification may run existing checks; creating new test files is a separate decision.
 
@@ -90,7 +90,7 @@ Full ranked list + verbatim quotes: `shared/local-skills/get-your-shit-together/
 ## 3. Context Hygiene
 - **LOG HANDLING:** Never dump large logs into the chat. Filter them (`grep`). Do not use sleep loops as a substitute for state inspection; query the authoritative state and act on the result.
 - **QUERY-FIRST NOTES:** Keep `CURRENT_TASK.md` as a compact operational index, not a transcript. Replace superseded state instead of appending receipts. Keep it under 200 lines and 16 KiB; if durable material would exceed either limit, move stable topic knowledge to a focused indexed note and link it. Before reading any note, use task keywords and the project index to justify relevance; do not open every linked file.
-- **SELF-REPAIR CONTEXT:** Invoke `$unfuck-yourself` when a live record or note exceeds 200 lines/16 KiB, recovery repeatedly loads irrelevant files, or one task compacts twice without meaningful progress. Diagnose and refactor the note/recovery path before continuing accumulation.
+- **FAILURE/PROCESS AUDIT:** Invoke `$unfuck-yourself` for a requested failure audit, repeated mistakes or ineffective corrections, and recovery problems such as oversized records, irrelevant reads, or repeated compaction without progress. Trace what failed, how, why, which process stages and safeguards broke, and the evidence for each cause before selecting a repair. Refactor documents only when their structure caused the failure; verify the affected task and process instead of treating smaller notes as completion.
 - **COMPACTION SURVIVAL:** Before compaction, update the canonical task record with exact active state and an immediate next action. After compaction, check Goal state, read that record, then inspect only artifacts it names as required for the next action. Invoke `$un-dumb-yourself` only when exact state cannot be recovered from those sources or the user explicitly requests it. Compaction alone never authorizes full instruction, history, handoff, or note-stack rereads.
 
 ## 4. Ideation & Feasibility
@@ -223,11 +223,92 @@ Use `skills.sh` as the source of truth for non-local skills.
 - When `grill-me` or `grilling` matches materially underspecified plans, designs, or features whose unresolved choices would change the delivered result, invoke it before artifacts. Do not grill for facts discoverable from the repo or settled requirements.
 - Prefer the smallest set covering all matching triggers. Skill discovery must reduce uncertainty or work; never load unrelated skills as ceremony.
 
-## Design Skill Invocation
+## Skill Routing Map
 
-- Treat `design`, `redesign`, `UI`, `UX`, `mockup`, `visual`, `layout`, `theme`, `style`, `brand`, and `pixel-perfect` as design triggers.
-- Before proposing or implementing design work, invoke the relevant installed design skills. For broad or open-ended design work, invoke most applicable design skills first, including `frontend-design`, `web-design-guidelines`, `ui-ux-pro-max`, `design-md`, `canvas-design`, `design-taste-frontend`, `taste-design`, `visual-pixel-match`, and any matching Stitch/Figma/design-system skill.
-- Use a smaller subset only when the design scope is clearly narrow, and do not attempt the design first and retrofit skill guidance afterward.
+Route by the task in front of you, not by keyword overlap. In each row the first skill is primary; load the others only when their specific condition holds. When two skills cover the same job, load the primary and skip the rest. A user naming a skill or framework always wins over this map. Project rules and an existing design system outrank every skill.
+
+### Planning, specs, and decisions
+- Underspecified plan, feature, or design: `grill-me` or `grilling`; `grill-with-docs` when project docs exist to grill against.
+- Choosing an approach before coding: `think`. Restructuring existing code: `improve-codebase-architecture` or `codebase-design`. Domain vocabulary or `CONTEXT.md`: `domain-modeling`.
+- Recording a settled architecture decision: `architecture-decision-records`.
+- Turning agreed requirements into a spec or tickets: `to-spec`, `to-tickets`. Multi-step implementation plan: `writing-plans`.
+- Vague request that needs sharpening before work: `sharpen`. Writing a prompt for another model or tool: `prompt-master`. Writing skills, `AGENTS.md`, or `CLAUDE.md`: `writing-for-agents`, then `skill-creator` to evaluate a skill.
+
+### Implementation
+- Tests requested or required by the project: `tdd`. Minimal fix: `surgical-patch`. Behavior-preserving refactor: `safe-refactor`.
+- Type-level TypeScript (generics, conditional or mapped types): `typescript-advanced-types`. Effect code: `effect-ts`. Elysia backend: `elysiajs`.
+- React/Next.js: `vercel-react-best-practices`; `react-doctor` to scan for React problems; `vercel-composition-patterns` for component API design; `vercel-react-view-transitions` for view transitions; `vercel-react-native-skills` for React Native.
+- Three.js: `three-best-practices`; with `@react-three/fiber`: `r3f-best-practices`.
+
+### Debugging, review, and shipping
+- Bug, crash, or regression: `diagnosing-bugs`; `hunt` only when the user asks for it. Do not stack `systematic-debugging` on top.
+- Reviewing a diff or branch: `code-review`. Release readiness or issue/PR triage: `check`, which never pushes, publishes, or closes anything without permission granted in the current turn.
+- PR body: `pr`. PR evidence: `prove-it-in-pr`. Merge conflicts: `resolving-merge-conflicts`.
+
+### Browser and quality audits
+- Driving a browser or verifying UI: `agent-browser` (launch arguments per the hard limits above). Exploratory QA: `dogfood` or `agent-browser-dogfood`.
+- Project uses Playwright, or a trace/codegen is needed: `playwright-cli`.
+- Audits: `web-quality-audit` for a broad pass; `accessibility`, `core-web-vitals`, `performance`, or `seo` for one area.
+
+### UI: styling stack (match the project)
+- Panda CSS: `panda-css`; tokens, themes, recipes: `panda-css-theming`; migrating from another CSS tool: `panda-css-migrate`.
+- Ark UI headless components: `ark-ui`.
+- Park UI (Ark UI with Panda styles): `panda-css` plus `ark-ui`, and fetch `https://park-ui.com/llms.txt` for component and recipe docs. No Park UI skill exists.
+- shadcn/ui, Radix, or Base UI: `shadcn`. `shadcn-ui` (Stitch) only inside Stitch workflows.
+
+### UI: design and build
+- Design triggers: `design`, `redesign`, `UI`, `UX`, `mockup`, `visual`, `layout`, `theme`, `style`, `brand`, `pixel-perfect`. Load skills before designing, never retrofit them afterward.
+- New UI with no design system: `frontend-design` plus `design-taste-frontend`; add one style skill only when the brief names that style: `minimalist-ui`, `industrial-brutalist-ui`, `high-end-visual-design`, `brandkit`. Palette, font, and chart data: `ui-ux-pro-max`.
+- Existing UI being improved: `redesign-existing-projects`, keeping the established system. `DESIGN.md` from Stitch: `design-md`.
+- Anti-slop filter on every UI, copy, or code-comment task: `antislop` core plus the matching `antislop-ui`, `antislop-copywriting`, `antislop-human`, `antislop-layoutmobile`, or `antislop-code`. Use `ui-taste` or `anti-ui-slop` only when asked.
+- Real product references for a screen, flow, or pattern: `ui-radar`.
+- Rebuilding a screenshot or mockup 1:1: `image-to-ui`; capturing diff evidence: `visual-pixel-match`. A Figma URL for UI goes through the Figma MCP `figma-design-to-code` flow, never the HyperFrames `figma` skill.
+- iOS screens: `ios-design`. Information density: `ui-density`. Usability review: `ux-heuristics`. Guideline compliance review: `web-design-guidelines`.
+- Load `ui`, `ui-design`, `uizze-ui`, `gpt-taste`, `taste-design`, and `canvas-design` only when the user names them.
+
+### Web animation
+- GSAP: `gsap-core`; React: `gsap-react`; scroll: `gsap-scrolltrigger`; sequencing: `gsap-timeline`; plugins: `gsap-plugins`; jank: `gsap-performance`.
+- Motion that feels wrong, easing, timing: `animation-principles`. Animated background: `motion-background`.
+
+### Video and motion graphics
+- Any video, reel, promo, or trailer: `motion-reel` first. It picks the engine; then load the engine's router.
+- HyperFrames engine: `hyperframes` (router), which hands off to `product-launch-video`, `pr-to-video`, `faceless-explainer`, `motion-graphics`, `music-to-video`, `general-video`, `slideshow`, `embedded-captions`, or `talking-head-recut`.
+- Remotion engine: `remotion-best-practices` (router), then `remotion-*`. `remotion` (Stitch) only for Stitch walkthroughs.
+- Creative direction: `motion-art-direction`; framing: `shot-composition`; cut rhythm: `beat-sync-editing`; color: `color-motion`; logo stings: `logo-animation`; Adobe After Effects: `after-effects`.
+
+### Data, analytics, and dashboards
+- Answering a data question or investigating a metric: `analyze`. First look at a new table or file: `explore-data`; scientific files (HDF5, FASTA, NumPy, images): `exploratory-data-analysis`. QA before sharing results: `validate-data`.
+- New SQL from a data need: `write-query`. Optimizing or translating SQL between dialects: `sql-queries`. Company warehouse context skill: `data-context-extractor`.
+- Statistics and hypothesis tests: `statistical-analysis`; regression and time series models: `statsmodels`; machine learning: `scikit-learn`.
+- DataFrames: pandas: `pandas-pro`; Polars: `polars`.
+- Python charts: `create-viz`; chart choice and color principles: `data-visualization`; library-specific work: `matplotlib` or `seaborn`; publication figures: `scientific-visualization`. Charts in web UI or artifacts: `dataviz` where the host provides it.
+- Standalone HTML dashboard from data: `build-dashboard`. Choosing metrics and dashboard layout: `kpi-dashboard-design`; a dashboard inside product code also gets the project's UI stack skills and `ui-density`.
+- Stakeholder report or narrative: `data-storytelling`. Spreadsheet in or out: `xlsx`.
+
+### Research, reading, and writing
+- Read a URL or PDF to Markdown: `read`. Investigating a question from primary sources into a repo file: `research`. Deep study of an unfamiliar domain: `learn`. Personal knowledge wiki: `karpathy-llm-wiki`.
+- Product and marketing copy: `antislop-copywriting`. Polishing prose: `write`. Load one prose skill per task.
+
+### Agent setup and orchestration
+- Auditing agent configuration drift in this repository: `health`.
+- Parallel independent work: `dispatching-parallel-agents`.
+- Inactive until Orca is installed: `orca-cli`, `orchestration`, `orca-*`, `jira-tickets`, `linear-tickets`. Handoffs always use `handing-off-pro-max`, never Orca.
+- Never use Orca `computer-use`; it drives native GUI apps, which the macOS automation ban forbids.
+- `design-mobile-apps` (Sleek) requires `SLEEK_API_KEY`; skip it while the key is unset.
+
+<!-- antislop:start -->
+## antislop
+For UI, copy, people, mobile layout, or code comments work, read `~/.agents/skills/antislop/SKILL.md` (core) and then the skill for the task:
+- UI / visual: `~/.agents/skills/antislop-ui/SKILL.md`
+- Copy & text: `~/.agents/skills/antislop-copywriting/SKILL.md`
+- People: `~/.agents/skills/antislop-human/SKILL.md`
+- Mobile / responsive: `~/.agents/skills/antislop-layoutmobile/SKILL.md`
+- Code comments: `~/.agents/skills/antislop-code/SKILL.md`
+Before starting, follow the core's "Two Usage Modes" section in strict order: explicit session instruction first, then global preference, then ask. A session instruction always wins. For a resolved mode, say `antislop active: <mode> (session override).` or `antislop active: <mode> (global preference).` once before presenting findings or making edits, using the actual mode and source. Acknowledging the user's request without naming the source does not replace this notice.
+Only an explicit choice of antislop during or after selects a session mode. A request to review, audit, or avoid file edits does not select a mode; read the global preference in that case. Another skill's mode does not select antislop's mode.
+If the mode is unresolved, ask during/after and end the response; wait for the answer before any UI review, planning, or concept. For read-only tasks, put the active-mode notice only at the start of the final answer, never in progress messages. For editing tasks, announce before the first edit and omit it from the final answer.
+To update antislop later, run `./meta/sync.sh --yes` from `.awesome-agent`; the skills are registered in `shared/remote-skills.txt`.
+<!-- antislop:end -->
 
 ## Handoff Invocation
 
@@ -241,15 +322,17 @@ Use `skills.sh` as the source of truth for non-local skills.
 - `get-your-shit-together`: Use when the user reports drift, ignored instructions, invented assumptions, repeated failure, or visibly bad output.
 - `handing-off-pro-max`: Produce a complete, continuation-safe operational handoff before context compression, changing the agent handling a project, stopping work, leaving documentation, or whenever the user says handoff, hand over, continue later, preserve context, everything in context, exact commands, or no summary. Use this before `un-dumb-yourself before`; it replaces vague status summaries with a current, exhaustive, evidence-backed handoff another agent can execute without rediscovery.
 - `look-at-the-screen`: Inspect the actual visible artifact before interpreting, diagnosing, editing, testing, or claiming visual correctness. Use whenever the user supplies or references a screenshot, image, screen recording, browser page, app screen, rendered document, design, mockup, canvas, terminal capture, or other visual state; asks the agent to look, see, inspect, compare, verify, show, or match what is on screen; says the visible result contradicts code, logs, tests, or prior reasoning; or expresses frustration that the agent is reasoning without directly examining the displayed artifact.
+- `motion-reel`: Make motion-graphics videos rendered from code (Remotion or a seek(t) canvas page + headless browser + ffmpeg) - product launch/promo reels, feature highlight videos, showreels, animated explainers, music videos, release trailers - with real product UI, kinetic type, beat-synced cuts and an original synthesized soundtrack, then critique your own frames until they hold up. Use this whenever the user asks for a video, promo, trailer, reel, "motion graphic", "make a 15s/20s video", an animation to announce a release or feature, video music/soundtrack, or mentions Remotion, HyperFrames, seek(t), contact sheets, or the Opus 5.5 motion-design trend, even if they don't say "motion design".
 - `prove-it-in-pr`: Execute affected testing step by step, capture current screenshots or complete-flow videos, embed the proof in the reviewer-facing pull request, and reopen and proofread the rendered PR yourself. Use when the user invokes `$prove-it-in-pr`, asks for proof/evidence in a PR, wants testing documented step by step, requests screenshots/video attached or embedded in a PR, says “PR + proof,” or complains that evidence is local-only, stale, incomplete, unembedded, or not proofread.
 - `ralph-playbook`: Use this skill whenever the user wants to set up, apply, adapt, or audit the Ralph methodology from ClaytonFarr/ralph-playbook in a real repository. Trigger on requests about Ralph loops, Geoff Huntley’s workflow, autonomous coding loops, IMPLEMENTATION_PLAN.md, AGENTS.md, specs workflows, plan/build prompt files, brownfield reverse-engineering into specs, or branch-scoped Ralph planning.
 - `real-testing-evidence`: Use when work touches real user workflows, browser/auth/audio/data behavior, PR readiness, screenshot/video evidence, dogfood, or subagent orchestration across independent slices.
 - `show-me`: Make active work continuously visible and course-correctable through headed browsers, live hot-reload views, VS Code-visible files, screenshots, videos, rendered mockups, or directly inspectable artifacts. Use when the user invokes `$show-me`, says “show me,” “I want to see,” “open it,” “headed,” “live view,” “hot reload,” “what are you doing,” “where are you at,” asks to watch every step, or objects that work/testing/thinking is hidden, silent, happening in a void, or not tangible.
+- `speak-properly`: Keep responses limited to the user’s requested task and in the correct language when they ask for a direct answer, reject unwanted content, or report language drift.
 - `stop-inventing`: Read every authoritative reference completely and execute its requirements literally without inventing features, facts, data, constraints, fallbacks, interpretations, scope, or substitutions. Use when the user invokes `$stop-inventing`, says to stop inventing, tells the agent to read or follow all references, says the answer or implementation contradicts supplied sources, prohibits assumptions or invention, provides source-of-truth assets or examples, or requires exact conformance to existing documentation, designs, code, specifications, logs, sessions, or artifacts.
 - `test_skill`: Basic test skill used for sync validation and smoke testing.
 - `test_sync_flat`: Flat skill for sync test.
-- `the-council`: Convene an adversarial council of read-only auditor subagents to drive whatever is currently being worked on or output to zero defects. MUST fire whenever the user says "the council", "convene the council", "audit every piece of your work", "audit everything you did", "spawn auditors", "keep auditing until perfect", "review until clean", "fix and audit again", or says the finished work still has problems and wants it torn apart again — and whenever you are about to claim a substantial or high-stakes work product is done and self-review would be untrustworthy. (Bare frustration or drift with no audit ask belongs to get-your-shit-together, not here.) Identifies the session's work products itself, fans out a mandatory core panel of distinct-lens auditors in parallel, auto-fixes every confirmed finding, and re-audits after fixes until one complete clean round by default. Additional consecutive rounds apply only when the active task explicitly requires them.
+- `the-council`: Run a fresh third-party review of the actual current work product when the user invokes the council, requests an audit or review of current work, or independent review is required before a substantial or high-stakes delivery. Review only the in-scope deliverable and report confirmed defects.
 - `un-dumb-yourself`: Preserve compact active-task state before context compaction and recover it afterward from the canonical record and named live artifacts. Use when context is high, after compaction when state is missing, or when explicitly requested. Escalate to get-your-shit-together only when evidence shows drift or unresolved state.
-- `unfuck-yourself`: Use when project notes or task records exceed 200 lines or 16 KiB, recovery repeatedly loads irrelevant files, or the same task compacts more than once without meaningful progress.
+- `unfuck-yourself`: Audit why an agent failed, how the failure happened, and which process stages and safeguards broke. Use for explicit failure/process audits, repeated mistakes, ineffective corrections, or context/recovery problems that prevent progress.
 - `visual-pixel-match`: Capture, compare, and publish design-to-implementation screenshots for pixel-perfect UI work. Use when asked to match Figma/design screenshots, produce source/current/diff evidence, compute RMSE or normalized visual diffs, generate side-by-side comparison images, tune UI screenshots toward pixel-perfect output, or update PR screenshots with GitHub-hosted images.
 - `what-did-i-say`: Re-read and reconcile every direct user message in the complete current session into one authoritative, ordered todo before responding or continuing work. Audit current-session skill invocations and what subsequently went wrong, then execute the user's operative wording literally. Never read prior sessions or other projects. Use when the user invokes `$what-did-i-say`, asks what they said or requested in this session, sends multiple rapid-fire additions or corrections, says instructions were missed or ignored, or expresses frustration that current-session requirements, skill invocations, priorities, permissions, or explicit non-actions were lost.
