@@ -100,6 +100,7 @@ Route by the task in front of you, not by keyword overlap. In each row the first
 ### Video and motion graphics
 - Any video, reel, promo, or trailer: `motion-reel` first. It picks the engine; then load the engine's router.
 - 8-second looping UI effect (button to player, chart morph, masked type, particle logo): `motion-effects`. Looping data chart for a post: `animated-chart`. Illustrated explainer in a drawn style: `animate`. Vertical Reel or TikTok version: `reel-export`. Missing `brand.md` / `MOTION.md` for brand-sensitive motion: `brand-intake`.
+- HyperFrames rendering is local. Never run `hyperframes feedback` or `hyperframes cloud`/Lambda/Cloud Run, and never use HeyGen TTS or `media-use resolve`, unless asked this turn; keep `HYPERFRAMES_NO_TELEMETRY=1` on every hyperframes command.
 - HyperFrames engine: `hyperframes` (router), which hands off to `product-launch-video`, `pr-to-video`, `faceless-explainer`, `motion-graphics`, `music-to-video`, `general-video`, `slideshow`, `embedded-captions`, or `talking-head-recut`.
 - Remotion engine: `remotion-best-practices` (router), then `remotion-*`. `remotion` (Stitch) only for Stitch walkthroughs.
 - Creative direction: `motion-art-direction`; framing: `shot-composition`; cut rhythm: `beat-sync-editing`; color: `color-motion`; logo stings: `logo-animation`; Adobe After Effects: `after-effects`.

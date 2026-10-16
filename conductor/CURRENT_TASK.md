@@ -12,6 +12,7 @@
 
 - Motion upgrade: registered LottieFiles/motion-design-skill, charlie947 (animated-chart, motion-effects, reel-export, brand-intake), cth9191/animate, 199-biotechnologies motion-dev-animations; installed via sync. Skipped: claude-motion, howseen, product-launch-motion (repo- or author-bound; rules merged instead), klik (no license), hyperframes-student-kit (overwrites official hyperframes names), others thin or overlapping.
 - `motion-reel` upgraded: new `references/craft-rules.md` (timing numbers, easing/springs, continuity, render hygiene, QA, sound placement, export) distilled from MIT sources with credits; SKILL.md hands off to sibling skills and adds timeline/facts, render, reading-hold, QA and encode rules. Routing map updated for the new motion skills.
+- Outbound reporting off: core_profile.md rule bans telemetry, feedback and issue reports to vendors unless asked; routing map bans HyperFrames feedback/cloud/HeyGen services unless asked. `DO_NOT_TRACK`, `HYPERFRAMES_NO_TELEMETRY`, `NEXT_TELEMETRY_DISABLED`, `ASTRO_TELEMETRY_DISABLED` set in ~/.claude/settings.json `env` and ~/.codex/config.toml `[shell_environment_policy] set` (machine-local, not repo-managed); `hyperframes telemetry disable` saved (status disabled without env vars).
 
 ## Notes
 - No official Ark UI or Park UI skill; Ark uses community fandhe-ai skill, Park routed to https://park-ui.com/llms.txt.
