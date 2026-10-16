@@ -1,0 +1,4 @@
+interface:
+  display_name: "Motion Reel"
+  short_description: "Code-rendered promo videos with real UI, beat-synced motion and an original song"
+  default_prompt: "Use $motion-reel to make a 20-second motion-graphics promo for this release with real UI captures, beat-synced motion, an original soundtrack and a contact-sheet critique loop."
