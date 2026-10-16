@@ -94,10 +94,12 @@ Route by the task in front of you, not by keyword overlap. In each row the first
 
 ### Web animation
 - GSAP: `gsap-core`; React: `gsap-react`; scroll: `gsap-scrolltrigger`; sequencing: `gsap-timeline`; plugins: `gsap-plugins`; jank: `gsap-performance`.
+- UI motion design (timing, easing, choreography, micro-interactions) in any library: `motion-design`. Motion.dev / framer-motion in React, Next.js, Svelte or Astro: `motion-dev-animations`.
 - Motion that feels wrong, easing, timing: `animation-principles`. Animated background: `motion-background`.
 
 ### Video and motion graphics
 - Any video, reel, promo, or trailer: `motion-reel` first. It picks the engine; then load the engine's router.
+- 8-second looping UI effect (button to player, chart morph, masked type, particle logo): `motion-effects`. Looping data chart for a post: `animated-chart`. Illustrated explainer in a drawn style: `animate`. Vertical Reel or TikTok version: `reel-export`. Missing `brand.md` / `MOTION.md` for brand-sensitive motion: `brand-intake`.
 - HyperFrames engine: `hyperframes` (router), which hands off to `product-launch-video`, `pr-to-video`, `faceless-explainer`, `motion-graphics`, `music-to-video`, `general-video`, `slideshow`, `embedded-captions`, or `talking-head-recut`.
 - Remotion engine: `remotion-best-practices` (router), then `remotion-*`. `remotion` (Stitch) only for Stitch walkthroughs.
 - Creative direction: `motion-art-direction`; framing: `shot-composition`; cut rhythm: `beat-sync-editing`; color: `color-motion`; logo stings: `logo-animation`; Adobe After Effects: `after-effects`.
@@ -109,7 +111,7 @@ Route by the task in front of you, not by keyword overlap. In each row the first
 - DataFrames: pandas: `pandas-pro`; Polars: `polars`.
 - Python charts: `create-viz`; chart choice and color principles: `data-visualization`; library-specific work: `matplotlib` or `seaborn`; publication figures: `scientific-visualization`. Charts in web UI or artifacts: `dataviz` where the host provides it.
 - Standalone HTML dashboard from data: `build-dashboard`. Choosing metrics and dashboard layout: `kpi-dashboard-design`; a dashboard inside product code also gets the project's UI stack skills and `ui-density`.
-- Stakeholder report or narrative: `data-storytelling`. Spreadsheet in or out: `xlsx`.
+- Stakeholder report or narrative: `data-storytelling`. Spreadsheet in or out: `xlsx`. Animated chart video for a post: `animated-chart`.
 
 ### Research, reading, and writing
 - Read a URL or PDF to Markdown: `read`. Investigating a question from primary sources into a repo file: `research`. Deep study of an unfamiliar domain: `learn`. Personal knowledge wiki: `karpathy-llm-wiki`.
