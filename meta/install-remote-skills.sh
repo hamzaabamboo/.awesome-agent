@@ -7,6 +7,7 @@ REMOTE_SKILLS_FILE="$PROJECT_ROOT/shared/remote-skills.txt"
 SKILL_LOCK="${REMOTE_SKILLS_LOCK:-$HOME/.agents/.skill-lock.json}"
 DRY_RUN=false
 REINSTALL=false
+SKILLS_RUNNER=""
 read -r -a DEFAULT_AGENTS <<< "${REMOTE_SKILLS_AGENTS:-claude-code codex antigravity antigravity-cli gemini-cli github-copilot opencode zed}"
 
 while [[ "$#" -gt 0 ]]; do
@@ -76,5 +77,20 @@ while IFS= read -r entry <&3; do
         continue
     fi
 
-    npx skills add "${args[@]}"
+    if [ -z "$SKILLS_RUNNER" ]; then
+        if node --version >/dev/null 2>&1; then
+            SKILLS_RUNNER="npx"
+        elif command -v bun >/dev/null 2>&1; then
+            SKILLS_RUNNER="bun"
+        else
+            echo "A working Node.js or Bun runtime is required to install skills." >&2
+            exit 1
+        fi
+    fi
+
+    if [ "$SKILLS_RUNNER" = "bun" ]; then
+        bun x --bun skills add "${args[@]}"
+    else
+        npx skills add "${args[@]}"
+    fi
 done 3< "$REMOTE_SKILLS_FILE"

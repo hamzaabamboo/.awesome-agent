@@ -2,7 +2,15 @@
 
 set -euo pipefail
 
-real_claude="${PXPIPE_CLAUDE_BIN:-/opt/homebrew/bin/claude}"
+real_claude="${PXPIPE_CLAUDE_BIN:-}"
+if [ -z "$real_claude" ]; then
+    for candidate in /opt/homebrew/bin/claude /usr/local/bin/claude; do
+        if [ -x "$candidate" ]; then
+            real_claude="$candidate"
+            break
+        fi
+    done
+fi
 host="${PXPIPE_HOST:-127.0.0.1}"
 port="${PXPIPE_PORT:-47821}"
 base_url="http://$host:$port"

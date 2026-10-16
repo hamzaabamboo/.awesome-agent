@@ -7,7 +7,6 @@ HOME_MOCK="$(mktemp -d "${TMPDIR:-/tmp}/awesome-agent-hermes.XXXXXX")"
 BIN_MOCK="$HOME_MOCK/bin"
 SKILLS_CAPTURE="$HOME_MOCK/hermes-skills"
 PROMPT_CAPTURE="$HOME_MOCK/hermes-prompt"
-EXPECTED_PROMPT="$HOME_MOCK/expected-prompt"
 trap 'rm -rf "$HOME_MOCK"' EXIT
 
 mkdir -p "$BIN_MOCK"
@@ -31,6 +30,7 @@ chmod +x "$BIN_MOCK/hermes"
 
 HOME="$HOME_MOCK" \
 TARGET_ROOT="$HOME_MOCK" \
+AGENTS_MD="$HOME_MOCK/AGENTS.md" \
 PROJECT_TEMP_DIR="$HOME_MOCK/.build" \
 SKIP_REMOTE_SKILLS_INSTALL=true \
 HERMES_SKILLS_CAPTURE="$SKILLS_CAPTURE" \
@@ -38,7 +38,7 @@ HERMES_PROMPT_CAPTURE="$PROMPT_CAPTURE" \
 PATH="$BIN_MOCK:$PATH" \
     $SYNC_SCRIPT --yes
 
-expected="$HOME_MOCK/.agents/skills"
+expected="[\"$HOME_MOCK/.agents/skills\"]"
 actual="$(cat "$SKILLS_CAPTURE")"
 
 if [ "$actual" != "$expected" ]; then
@@ -53,16 +53,9 @@ if [ ! -f "$HOME_MOCK/.agents/skills/agent-browser-dogfood/SKILL.md" ]; then
     exit 1
 fi
 
-printf '%s' "$(cat shared/AGENTS.md)" > "$EXPECTED_PROMPT"
-
-if ! cmp -s "$PROMPT_CAPTURE" "$EXPECTED_PROMPT"; then
-    echo "FAIL: Hermes system prompt differs from shared/AGENTS.md"
+if [ -e "$PROMPT_CAPTURE" ]; then
+    echo "FAIL: Shared skill sync overwrote the Hermes-owned prompt"
     exit 1
 fi
 
-if ! grep -Fq "## GET-YOUR-SHIT-TOGETHER PROTOCOL" "$PROMPT_CAPTURE"; then
-    echo "FAIL: Hermes system prompt is missing the operating protocol"
-    exit 1
-fi
-
-echo "Hermes skill and prompt sync test passed."
+echo "Hermes skill-only sync test passed."

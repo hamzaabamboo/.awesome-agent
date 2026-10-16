@@ -141,5 +141,5 @@ To update antislop later, run `./meta/sync.sh --yes` from `.awesome-agent`; the 
 
 ## Handoff Invocation
 
-- Invoke `$handing-off-pro-max` before context compression, changing which agent handles a project, ending active work with documentation, or whenever the user asks for a handoff, continuation record, exact commands, everything in context, or no summary.
+- Invoke `$handing-off-pro-max` before context compression, changing which agent handles a project, ending active work with documentation, or whenever the user asks for a handoff, continuation record, exact commands, everything in context, or no summary. Use this before `un-dumb-yourself before`; it replaces vague status summaries with a current, exhaustive, evidence-backed handoff another agent can execute without rediscovery.
 - Routine compaction does not require a full handoff. Use `$handing-off-pro-max` only for an actual agent handoff, explicit handoff request, or deliberate stop requiring continuation documentation; use `$un-dumb-yourself` for compaction state recovery.

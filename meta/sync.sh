@@ -7,6 +7,7 @@ PROJECT_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 LOCAL_SHARED_SKILLS="${LOCAL_SHARED_SKILLS:-$PROJECT_ROOT/shared/local-skills}"
 CORE_PROFILE="$PROJECT_ROOT/shared/core_profile.md"
 SKILL_SYSTEM="$PROJECT_ROOT/shared/skill_system.md"
+AGENT_SKILLS_BLOCK="$PROJECT_ROOT/shared/agent_skills.md"
 AGENTS_MD="${AGENTS_MD:-$PROJECT_ROOT/shared/AGENTS.md}"
 REMOTE_SKILLS_INSTALLER="$PROJECT_ROOT/meta/install-remote-skills.sh"
 BUILD_ROOT="${PROJECT_TEMP_DIR:-$PROJECT_ROOT/.build}"
@@ -301,8 +302,8 @@ sync_claude_skill_links() {
 }
 
 sync_hermes_skills() {
-    local agents_skills="$TARGET_ROOT/.agents/skills"
-    local system_prompt
+    local agents_skills
+    agents_skills="$(python3 -c 'import json, sys; print(json.dumps([sys.argv[1]]))' "$TARGET_ROOT/.agents/skills")"
 
     if [ "$TARGET_ROOT" != "$HOME" ]; then
         log "Skipping Hermes config for non-home target: $TARGET_ROOT"
@@ -314,14 +315,13 @@ sync_hermes_skills() {
         return 0
     fi
 
-    system_prompt="$(cat "$AGENTS_MD")"
     run hermes config set skills.external_dirs "$agents_skills"
-    run hermes config set agent.system_prompt "$system_prompt" --force
 }
 
 render_agents_prompt() {
     if [ "$DRY_RUN" = true ]; then
         log "[dry-run] render $AGENTS_MD"
+        log "[dry-run] append $AGENT_SKILLS_BLOCK"
         return 0
     fi
 
@@ -356,6 +356,9 @@ for skill_dir in skill_dirs:
         line += f": {description}"
     print(line)
 PY
+
+    printf '\n' >> "$AGENTS_MD"
+    cat "$AGENT_SKILLS_BLOCK" >> "$AGENTS_MD"
 }
 
 sync_claude_commands() {
@@ -519,8 +522,8 @@ link_path "$AGENTS_MD" "$TARGET_ROOT/.gemini/GEMINI.md"
 
 sync_claude_commands
 sync_gemini_commands
-sync_wrappers
-sync_launch_agents
+# sync_wrappers
+# sync_launch_agents
 
 reset_dir "$TARGET_ROOT/.claude/rules"
 link_path "$AGENTS_MD" "$TARGET_ROOT/.codex/AGENTS.md"

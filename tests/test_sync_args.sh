@@ -9,6 +9,7 @@ export TARGET_ROOT="$HOME_MOCK"
 export SKIP_REMOTE_SKILLS_INSTALL=true
 export PROJECT_TEMP_DIR="$HOME_MOCK/.build"
 export AGENTS_MD="$HOME_MOCK/AGENTS.md"
+export REMOTE_SKILLS_LOCK="$HOME_MOCK/skill-lock.json"
 
 test_flag() {
     local flag=$1
