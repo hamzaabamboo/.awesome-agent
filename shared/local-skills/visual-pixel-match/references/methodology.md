@@ -98,7 +98,7 @@ RMSE uses `magick compare -metric RMSE` when ImageMagick is available, matching 
 6. Patch the smallest UI surface that explains the mismatch.
 7. Recapture the same ID.
 8. Repeat until that ID is acceptable, then move to the next ID.
-9. Upload final evidence with `gh image`.
+9. Upload final evidence with `gh pr edit --attach`.
 10. Clean the project folder before PR handoff.
 
 Do not optimize only for RMSE. Check state selection, clickability, scrollability, visible copy, animation, clipping, asset scale, and whether the screenshot actually came from the current head.
@@ -134,7 +134,7 @@ If the visual asset includes padding that cannot change, compensate in CSS aroun
 Use:
 
 ```bash
-gh image --repo owner/repo /tmp/source.png /tmp/current.png /tmp/comparison.png
+gh pr edit <number> --repo owner/repo --attach /tmp/source.png --attach /tmp/current.png --attach /tmp/comparison.png
 ```
 
 Paste the returned Markdown or convert it into a PR table. Include:

@@ -85,7 +85,7 @@ The user's "e2e tests" strictness is not just chat anger. It is encoded in the p
 
 ### Shinkijigyousitu: harness-first interview E2E
 
-`/Users/vittayapalotai.tanyawat/work/shinkijigyousitu/CLAUDE.md` requires `.claude-rules/e2e-testing.md` at session start and makes screenshot evidence mandatory for PRs, Linear updates, task handoffs, QA requests, and UI work. Screenshots should be taken through `agent-browser --cdp 9222 screenshot`, resized, uploaded through `gh image`, and embedded as GitHub user attachments, not committed as repo files.
+`/Users/vittayapalotai.tanyawat/work/shinkijigyousitu/CLAUDE.md` requires `.claude-rules/e2e-testing.md` at session start and makes screenshot evidence mandatory for PRs, Linear updates, task handoffs, QA requests, and UI work. Screenshots should be taken through `agent-browser --cdp 9222 screenshot`, resized, uploaded through `gh pr edit --attach`, and embedded as GitHub user attachments, not committed as repo files.
 
 The hard interview rule is in `.claude-rules/e2e-testing.md` and `skills/e2e-interview-test/SKILL.md`: for interview/browser/audio work, read and use `/e2e-interview-test`; do not improvise Puppeteer, Playwright, raw CDP, or `/tmp/run_*.sh` harnesses. Browser control should go through `agent-browser`, usually with an isolated session and `--cdp 9222` when Chrome is externally launched.
 
@@ -429,7 +429,7 @@ Representative messages:
 - 2026-05-21, Claude memory: "Project docs live OUTSIDE the code repo"
 - 2026-05-27, Codex memory: "no project-folder scratch files"
 - 2026-06-10, Codex memory: "write or update the relevant notes/evidence/task/PR-body files as part of the work"
-- 2026-06-15, Claude memory: "For PR screenshots/proof: upload with the gh image extension ... NEVER commit a docs/pr-proof folder"
+- 2026-06-15, Claude memory: "For PR screenshots/proof: upload with the native gh pr edit --attach command ... NEVER commit a docs/pr-proof folder"
 
 Underlying need: the artifact of record matters. Chat summaries are not enough, and repo pollution is a failure.
 

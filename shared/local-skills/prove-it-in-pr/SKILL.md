@@ -55,7 +55,7 @@ Capture complete causal proof: before or initial state → action → result →
 ## Put Proof In The PR
 
 - Keep media out of the repository.
-- Upload through GitHub user attachments or the repository-required media host.
+- Attach media with `gh pr edit <number> --attach <path>`; repeat `--attach` for multiple files. Use `--body-file` with local image references to place uploads beside their claims. Check native CLI help before selecting an upload workflow. Do not install or build a separate uploader.
 - Embed images directly in the PR body where the claim is described.
 - Put video URLs on standalone lines.
 - Prefer updating the PR body. Do not add or reply to comments unless explicitly requested in the current turn.

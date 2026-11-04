@@ -15,7 +15,7 @@ description: Capture, compare, and publish design-to-implementation screenshots 
 6. Run `scripts/compare_screenshots.py --source-dir <source> --current-dir <current> --out-dir <artifact-root>` to generate `metrics.tsv`, `diff/*.png`, and `comparison/*.png`.
 7. Inspect the highest normalized diffs and the side-by-side composites before editing UI.
 8. Iterate in this order: source map, one current capture, RMSE/diff, visual inspection, code change, recapture the same ID.
-9. Upload final source/current/comparison images with `gh image --repo <owner>/<repo> <paths...>`.
+9. Upload final source/current/comparison images with `gh pr edit <number> --repo <owner>/<repo> --attach <path> (repeat --attach for each file)`.
 10. Update the PR with the GitHub-hosted table and include the exact head SHA, workflow links, and any remaining real checks.
 11. Before finalizing, remove screenshot-only preview routes, scratch components, scratch assets, and project-local docs.
 
@@ -39,7 +39,7 @@ description: Capture, compare, and publish design-to-implementation screenshots 
 
 ## PR Rules
 
-- Use GitHub-hosted images from `gh image`; do not create gists.
+- Use GitHub-hosted images from `gh pr edit --attach`; do not create gists.
 - Put source, current, and comparison columns in the PR body.
 - Do not commit screenshots or screenshot docs in the project source tree.
 - Include deploy-dev and build workflow links when the user asks for dev deployment evidence.
