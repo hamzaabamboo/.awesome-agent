@@ -1,0 +1,4 @@
+interface:
+  display_name: "Park UI on Panda v2"
+  short_description: "Set up or migrate onto Park UI with Panda CSS v2"
+  default_prompt: "Use $park-ui-panda-v2 to set up Park UI on Panda v2 or migrate this app's hand-written CSS onto it."
