@@ -1,10 +1,15 @@
-# Current Task — sync global configuration without owning Hermes setup
+# Current Task — agent-log self-improvement and self-blocking Stop hook
 
-- Latest request: update and sync the global configuration workspace, leave intended changes cleanly integrated, and keep Hermes-owned behavior separate from shared skills.
-- Remote fetched; main fast-forwarded to f6553e6. Existing local profile/setup changes preserved and reconciled. Two unrelated private review documents are preserved in the named review-document stash, not included in this configuration change. The pre-update preservation stash remains as a recovery copy.
-- Implemented: Hermes registration writes a JSON list to skills.external_dirs only; no shared prompt overwrite. Remote skill installer uses a working Node runtime or existing Bun. Existing tracker/domain setup and global operating-rule changes retained; generated AGENTS.md refreshed through sync.
-- Verified: real full sync exited 0; shared local skills resolve back into this repo; Codex/Gemini prompt symlinks resolve to generated shared/AGENTS.md; Hermes-owned prompt preserved exactly. Telemetry opt-outs honored by the skills CLI source.
-- Tests: test_hermes_sync.sh, test_sync_args.sh, and test_remote_skills.sh passed; shell syntax and git diff whitespace checks passed; intended diff credential-pattern scan clean.
-- Hermes work is recorded only in its workspace conductor/CURRENT_TASK.md. No Hermes-specific profile is stored here. Its real memory/tool verification passed; HamFlow source response timeout remains outside global configuration sync.
-- Global integration committed and pushed to origin/main; working tree clean after push. Final receipt commit uses the same checks and branch. No PR created.
-- Next: no global configuration work remains. Hermes-specific live service blockers continue only under its workspace task record.
+## Active (2026-11-04)
+- Request: read Claude + Codex transcripts Sep 4 – Nov 4 2026, find recurring agent failures, document them, fix the instructions and the harness, council it, then commit, push and test.
+- Causal finding: written rules already forbade self-blocking and agents ignored them; the first council loop repeated the failure (22 rounds of text patches with no convergence bound).
+- Harness: `shared/hooks/no_self_block.py` Stop hook (blocks once on permission questions/offers, self-blocking, or unverified/untested endings). Claude: `~/.claude/hooks` symlink + `settings.json` Stop entry. Codex: `~/.codex/hooks.json` symlink to `shared/hooks/codex-hooks.json`. `tests/test_no_self_block.sh`: 47 cases.
+- Docs: `analysis/agent-log-pain-points/report-2026-11.md`; scripts `extract`, `pairs`, `classify-pairs`, `bucket-messages` (`.mjs`).
+- Rules: `shared/core_profile.md`, `shared/skill_system.md`, GYST `user-demands.md` §21; `shared/AGENTS.md` rendered by the sync generator.
+- Council: final full-deliverable review returned 0 findings.
+- User-only: approve the hook once in Codex's trust prompt.
+- Not committed by design: `shared/local-skills/avatar-clip-pack/` (work-workspace skill; a recorded user rule keeps it out of global sync; this repo is public).
+- Out of scope, reported: `block_pr_merge.py` blocks `gh pr merge` in every repo.
+
+## Previous task (done)
+- Global configuration sync without owning Hermes setup: committed and pushed upstream (f78a573, 917e788); Hermes-specific work lives in its own workspace record.

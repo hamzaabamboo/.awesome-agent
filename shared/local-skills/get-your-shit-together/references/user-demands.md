@@ -25,12 +25,13 @@ To refresh this list, see `refresh-procedure.md`.
 18. Task-Tracking & Process
 19. Hard Limits & Concrete Sub-Rules
 20. GYST Usage Failures Recovered 2026-07-23
+21. Self-Blocking and Hand-Back Failures (Sep–Nov 2026 audit)
 
 ---
 
 ## 1. The Non-Negotiables
 
-1. 🔴 **Do your own investigation.** Query, dig, read the data/code yourself. Never ask him or claim info is missing. — *"do you OWN investigation dammit"*
+1. 🔴 **Do your own investigation.** Query, dig, read the data/code yourself. Never ask him or claim info is missing when it is discoverable on disk, in the repo, in the session or from a queryable service (see §21 exceptions). — *"do you OWN investigation dammit"*
 2. 🔴 **Read everything relevant first — fully, line by line.** Read the complete current session, in-scope files/logs, and provided assets. Cross-session history reads happen only when explicitly requested or required by a recovery/history skill, and remain inside the current project unless broader scope is explicit.
 3. 🔴 **Make it work — "impossible" is a skill issue.** Don't whine, don't declare infeasible, improvise and keep going. — *"FUCKING HELL MAKE IT WORK STOP WHINING"* / *"IF I THINK IT'S POSSIBLE IT'S POSSIBLE YOU JUST SKILL ISSUE"*
 4. 🔴 **Prove it works — no proxy completion.** Don't claim done/fixed until you've tested it and can SHOW it running. Blocked ≠ pass. Don't gaslight. Don't inflate counts. — *"DON'T FUCKING GASLIGHT ME"* / *"Be honest: blocked != pass"*
@@ -40,7 +41,7 @@ To refresh this list, see `refresh-procedure.md`.
 8. 🔴 **Stay strictly in scope.** Only what was asked, only the named files. Don't break working code, don't re-add removed things, don't reopen settled decisions, don't do work he didn't ask for. — *"Edit ONLY <file>. Touch nothing else."*
 9. 🔴 **Puke everything into project/repo files — never hidden memory.** So he never repeats himself. Update instruction files the moment you're corrected. — *"FUCKING PUKE ALL YOUR MEMORY AND PUT IT INTO PROJECT FILES... I DON'T WANT TO REPEAT MYSELF EVER"*
 10. 🔴 **Read existing notes first and take notes continuously.** Discover note indexes and linked notes before action; write durable tranche notes while reading logs, not a reconstructed summary afterward. — *"YOU ARE NOT READING NOTES / YOU ARE NOT TAKING NOTES"*
-11. 🔴 **Never deploy/push unless told THIS turn.** A past mention is not standing permission. — *"never fucking deploy... only because i mentioned it once"*
+11. 🔴 **Never deploy/push unless told THIS turn.** A past mention is not standing permission. For push, ship, deploy and merge, "this turn" means the current task in the current session: a direct request for one of them covers later actions of that same kind for that task until revoked, and does not extend to the others (see §21). — *"never fucking deploy... only because i mentioned it once"*
 12. 🔴 **Real e2e testing only — real browser, real mic, real backend.** No mocks, no unit-test/source-inspection substitutes. Test every page/button/flow/viewport. — *"TEST EVERYTHING, EVERY FUCKING PAGE EVERY BUTTON... NO MOCK NO BULLSHIT"*
 13. 🔴 **Match design pixel-perfect.** "Very close" is not done. Compare screenshots side by side, iterate to the threshold. — *"very close is not close ffs be more detail oriented"*
 14. 🔴 **Don't stop until it's fully done and he approves.** If you think you're done, you're not — keep finding bugs and finishing the chain. — *"IF YOU THINK YOU ARE DONE, YOU ARE FUCKING NOT, KEEP WORKING"*
@@ -76,7 +77,7 @@ To refresh this list, see `refresh-procedure.md`.
 ## 4. Do The Work / Anti-Excuse / Persistence
 - 🔴 Make it work; don't whine or declare it impossible — that's a skill issue. Serialize it, adapt, do whatever it takes.
 - 🔴 Stop chickening out — test it yourself and make it work instead of finding reasons it can't be done.
-- 🔴 Don't stop until it's 100% working and he approves — finish the whole chain (commit, push, deploy, clean tree) when in scope.
+- 🔴 Don't stop until it's 100% working and he approves — finish the whole chain when in scope: commit and clean the tree, and push/deploy only as authorized per §21.
 - 🔴 Never declare done prematurely — keep iterating, keep finding bugs/improvements.
 - Do real work, not busywork — no 30 minutes of nothing, no slacking.
 - Just do the work — don't ask him to approve every step; plow through and unblock yourself.
@@ -96,7 +97,7 @@ To refresh this list, see `refresh-procedure.md`.
 - Before design work, invoke the design skills and absorb the reference vibe first — don't retrofit.
 
 ## 6. Investigation & Root Cause
-- 🔴 Do your own investigation — query, dig, inspect the data/code yourself; don't ask or claim info is missing.
+- 🔴 Do your own investigation — query, dig, inspect the data/code yourself; don't ask or claim info is missing when it is discoverable (see §21 exceptions).
 - 🔴 Don't assume/hallucinate — read the specific error/log/code, get the real cause; log more if needed.
 - 🔴 Stop guessing — look at the real screenshots/PRs/data before acting.
 - Find the REAL remaining root cause and give the precise fix — no surface patch, no bolt-on.
@@ -117,8 +118,8 @@ To refresh this list, see `refresh-procedure.md`.
 - 🔴 Never run a script and then sit/wait/sleep/poll/loop — run it and read the result, or do the work yourself.
 - 🔴 No "waiting for X" — always CHECK/POLL/MONITOR by querying state once and acting; never a sleep loop doing nothing.
 - 🔴 You are the automation — never offload the real interaction to a monitor loop or background scheduler.
-- Do the work in THIS session, one by one — no offloading the main work to background tasks/scheduling/unnecessary parallelism. (Parallel subagents for thorough checking are welcome.)
-- Run commands one at a time — batching/looping commands breaks the permission flow.
+- Do the work in THIS session — no offloading the main work to background tasks or scheduling. Dependent steps run one by one. Independent units may fan out (a bulk script, subagents, or a maximum-effort request per §21); never parallelize dependent steps. (Parallel subagents for thorough checking are welcome.)
+- Run commands one at a time — batching/looping commands breaks the permission flow. Exception (§21): one bulk data script run as a single command, and fan-out through subagents.
 - 🔴 Never use shell pipes in the Hermes environment — use direct commands, native tools, or explicit intermediate files instead. — *"Never pipe shit in a Hermes environment EVER"*
 - Be autonomous — when something's broken, iterate and fix; don't just report and stop. Pick up from the last session and keep going.
 - Don't make him spoonfeed you — infer and execute the obvious step.
@@ -137,13 +138,13 @@ To refresh this list, see `refresh-procedure.md`.
 - 🔴 Never use browser-hosted Claude, Claude scratchpads, Claude/Cowork private workspaces, or any proprietary assistant artifact store for project work. Create every required code/doc/test/evidence/handoff artifact directly in the project-owned repository; a vendor-private/transient location is never the canonical deliverable.
 
 ## 10. Git / PR / Deploy Safety
-- 🔴 Never push/deploy/merge/trigger unless he explicitly asked in THIS turn.
+- 🔴 Never push/deploy/merge/trigger unless he explicitly asked in THIS turn (current task in the current session; see §21).
 - 🔴 Certain repos are strictly read-only — never write/commit/push there; on inspection-only repos, only git log/show/grep/Read.
 - On any "update / current / ready / safe to migrate" question: `git fetch` (and `gh` for PR state) FIRST; never reason from a stale ref.
 - A branch update is incomplete until intended changes are committed and pushed, local and remote heads are verified equal, and the worktree is clean.
 - All `/code` work uses the `hamzaabamboo` GitHub identity (hard rule); never add agent attribution to commits/PRs.
-- Squash granular commits; keep one branch locally, clean working tree, everything committed/pushed to the right branch.
-- Never commit screenshots/videos/docs into the repo — host media externally (gh image upload) and embed in the PR body; docs stay outside the project folder.
+- Squash granular commits; keep one branch locally, clean working tree, everything committed to the right branch and pushed when push is authorized per §21.
+- Never commit screenshots/videos/docs into the repo — host media externally (gh pr edit --attach) and embed in the PR body; docs stay outside the project folder.
 - Keep PRs clean/merge-ready — strip v1/v2 artifacts, junk, unrelated refactors; review the whole PR.
 - Don't spam new PR comments — edit the original. Keep command diaries/hashes out of reviewer-facing text.
 - Proactively drive PRs to merge-ready without being told each step (when in scope).
@@ -174,8 +175,8 @@ To refresh this list, see `refresh-procedure.md`.
 
 ## 14. Device & System Safety
 - 🔴 Never touch his devices or system defaults — don't SwitchAudioSource, don't change audio input; select the device inside the browser sandbox.
-- 🔴 Never use macOS automation commands — no `osascript`, AppleScript, Automator, Finder/Terminal control, or other macOS GUI/system automation. `open` is allowed only when he explicitly requests it in the current turn. Otherwise surface artifact paths only; he controls macOS applications.
-- Don't start or stop servers — use the one already running.
+- 🔴 Never use macOS automation commands — no `osascript`, AppleScript, Automator, Finder/Terminal control, or other macOS GUI/system automation. `open` is allowed only when he explicitly requests it in the current turn, plus `open -a <app>` to start developer tooling the task needs. A request to reveal a file in Finder, say where an output is, show a result, or open something in a named app or editor counts as an explicit request (see §21). Otherwise surface artifact paths only; he controls macOS applications.
+- Don't stop or replace unrelated servers. Start project dev servers and developer tooling (Docker Desktop, VPN client, emulators, local databases) yourself when the task needs them (see §21).
 - Never read/process images larger than ~2000px — downscale first or you brick the machine.
 - Don't brick the PC — run tests granularly with proper worker limits, never a monster run or unmonitored infinite loop.
 
@@ -277,3 +278,22 @@ To refresh this list, see `refresh-procedure.md`.
 **Realtime verification**
 - Treat mocked provider tests, local media/API fixtures, rejected authentication probes, and stale PR media as non-live evidence. A realtime pass requires current-head canonical browser evidence through a fresh isolated dev candidate and the actual provider/session path.
 - Keep separate task scopes and explicit holds intact: a later request for realtime evidence does not authorize testing a separate PR that is explicitly paused pending approval.
+
+## 21. Self-Blocking and Hand-Back Failures (Sep–Nov 2026 audit)
+
+Source: `analysis/agent-log-pain-points/report-2026-11.md` covers 4,375 unique messages and 1,541 keyword-matched corrections paired with the agent reply that preceded each one.
+
+- 🔴 Never end a turn blocked, waiting, or asking "should I…?" while in-scope work remains. Two exceptions: a real blocker that names the one user-only action, and a question the request, repo and sensible defaults cannot answer. Either way, keep working on everything independent of it. Before keyword-matched corrections, the agent reply most often claimed done or verified (250 of 1,541), ended blocked or waiting (224), listed unverified items (127), cited disk space (64), or ended with an explicit question or offer (56). The classes are loose keyword matches on the last 700 characters of the reply and overlap.
+- 🔴 A request in the current session beats a soft default (guidance worded as a preference: prefer, avoid, by default, usually, without a reason; rules worded never/must/always or as hard limits are not soft defaults unless turn-scoped; project protocol such as required tests, evidence and branch naming is not a soft default); do it and do not cite the rule back. Rules worded "this turn", "current turn" or "only when I ask" are per-request, satisfied by the request for that action only; push/ship/deploy/merge is the only session-wide reading. Absolute even when asked: deleting user data, secrets, audio/keychain/sudo, macOS automation including Finder/Terminal control by automation, outbound reporting. Every other unconditional rule still holds, including prod data, git identity, attribution and unrelated processes.
+- 🔴 Disk space is not a blocker unless cleanup leaves under 1 GiB free. Under 5 GiB, free your own build outputs, caches inside worktrees you created or that are merged, stale worktrees you own, and agent-browser sessions you opened. If that still leaves under 5 GiB, run `mo clean`: dry-run first, and abort on any sudo or password prompt. This standing exception, for cache, temp and app-log cleanup only, overrides the system-touch rule and SCOPE LOCK; it never covers user data, project logs or source. Never delete user data, project logs or source. Report the GiB freed in one line and continue.
+- 🔴 A request to reveal a file in Finder, say where an output is, show a result, or open something in a named app or editor is an explicit `open` request: pages, previews and local URLs go into the headed agent-browser; reveal files with `open -R`; open a file in a named app with `open -a <app>` (or `code` for VS Code). Never hand back a command. A request to open a URL in the user's own browser follows the profile-routing rule (work/personal profile, never the default handler). Phone steps come with a QR code.
+- 🔴 Verify before reporting. "Unverified" is not an outcome when you could verify it yourself. When the runtime truly cannot be reached, name the unverified item and the one user-only action needed; never report an unverified pass.
+- 🔴 Status = numbers (done/total, %, running now, ETA).
+- 🔴 A wrap-up request means finish every open in-scope item, then commit, clean the tree and remove your own worktrees. Push only when push was already requested for the task this session or the wrap-up says push; otherwise name the unpushed commits in one line.
+- Bulk over one-by-one: script the dump, match in bulk, fix the script. A request for maximum effort means full fan-out (it wins over the one-reader preference); test parallelism caps, the one-browser-session invariant and cheap-model reader defaults still apply.
+- A direct push, ship, deploy or merge request covers every later action of the same kind for the same task in the session; asking again is a failure. A push request does not authorize a merge or deploy. This applies only to push/ship/deploy/merge; paid APIs, cloud rendering and PR comments need a request each time. A PR request authorizes only pushing the PR branch.
+- Redesigns keep every existing feature; inventory before, diff after. No debug or internal state in user-facing UI.
+- The agent curates data and content output item by item; code only tallies.
+- Name subagents and sessions after their job; idle sessions take open items already listed in the task record or assigned by the user.
+- When a skill gap causes a failure, fix the skill source, not the single run.
+
