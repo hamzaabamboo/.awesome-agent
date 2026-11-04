@@ -1,11 +1,13 @@
 import { createReadStream, mkdirSync, readFileSync, readdirSync, statSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { createInterface } from "node:readline";
+import { spawn } from "node:child_process";
 
 const home = "/Users/vittayapalotai.tanyawat";
-const since = new Date("2026-03-17T15:00:00.000Z");
-const until = new Date("2026-06-18T15:00:00.000Z");
-const outDir = join(process.cwd(), "analysis/agent-log-pain-points/out");
+if (!process.env.SINCE || !process.env.UNTIL) throw new Error("Set SINCE and UNTIL (ISO timestamps). The 2026-06 report used SINCE=2026-03-17T15:00:00Z UNTIL=2026-06-18T15:00:00Z.");
+const since = new Date(process.env.SINCE);
+const until = new Date(process.env.UNTIL);
+const outDir = process.env.OUT_DIR || join(process.cwd(), "analysis/agent-log-pain-points/out");
 const messagesPath = join(outDir, "messages.jsonl");
 const reportPath = join(outDir, "summary.json");
 
@@ -102,7 +104,8 @@ function addMessage(message) {
 }
 
 async function readJsonl(path, onRecord) {
-  const rl = createInterface({ input: createReadStream(path), crlfDelay: Infinity });
+  const input = path.endsWith(".zst") ? spawn("zstd", ["-dcq", path]).stdout : createReadStream(path);
+  const rl = createInterface({ input, crlfDelay: Infinity });
   for await (const line of rl) {
     if (!line.trim()) continue;
     try {
@@ -233,8 +236,8 @@ function buckets() {
   }).sort((a, b) => b.count - a.count);
 }
 
-const codexFiles = files(join(home, ".codex/sessions/2026"), (path, stat) => path.endsWith(".jsonl") && stat.mtime >= since && stat.mtime < until);
-const claudeFiles = files(join(home, ".claude/projects"), (path, stat) => path.endsWith(".jsonl") && !path.includes("/subagents/") && stat.mtime >= since && stat.mtime < until);
+const codexFiles = files(join(home, ".codex/sessions"), (path, stat) => (path.endsWith(".jsonl") || path.endsWith(".jsonl.zst")) && stat.mtime >= since);
+const claudeFiles = files(join(home, ".claude/projects"), (path, stat) => path.endsWith(".jsonl") && !path.includes("/subagents/") && stat.mtime >= since);
 const claudeMemoryFiles = files(join(home, ".claude/projects"), (path, stat) => path.includes("/memory/") && path.endsWith(".md") && stat.mtime >= since && stat.mtime < until);
 const codexMemoryFiles = files(join(home, ".codex/memories/extensions/ad_hoc/notes"), (path, stat) => path.endsWith(".md") && stat.mtime >= since && stat.mtime < until);
 
