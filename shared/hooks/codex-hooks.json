@@ -1,0 +1,15 @@
+{
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 /Users/vittayapalotai.tanyawat/.awesome-agent/shared/hooks/no_self_block.py",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  }
+}
