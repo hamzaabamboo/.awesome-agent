@@ -342,6 +342,7 @@ To update antislop later, run `./meta/sync.sh --yes` from `.awesome-agent`; the 
 ## Repo-Local Skills
 
 - `agent-browser-dogfood`: Advanced dogfooding skill using agent-browser to audit web products and generate detailed reports.
+- `audio-rebalance`: Rebalance vocals against music in local recordings or HLS downloads, compare separation artifacts, and deliver processed audio or video clips while retaining editable stems.
 - `avatar-clip-pack`: Generate and package reusable talking-avatar animations from a reference portrait and shared motion data. Use for interviewer clip packs, seamless idle/nod/listen/blink loops, Japanese vowel animation, transparent video assets, and integration-ready avatar players.
 - `common`: Common utilities and shared knowledge for all agents.
 - `get-your-shit-together`: Use when the user reports drift, ignored instructions, invented assumptions, repeated failure, or visibly bad output.
