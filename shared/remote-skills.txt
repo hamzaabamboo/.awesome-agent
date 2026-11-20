@@ -32,7 +32,9 @@ nidhinjs/prompt-master
 millionco/react-doctor|react-doctor
 effect-ts/skills
 microsoft/playwright-cli|playwright-cli
+emilkowalski/skills|break-ui
 shadcn-ui/ui
+shadcn/improve
 chakra-ui/panda
 fandhe-ai/agent-reference-skills|ark-ui
 anthropics/knowledge-work-plugins|analyze,build-dashboard,create-viz,data-context-extractor,data-visualization,explore-data,sql-queries,statistical-analysis,validate-data,write-query

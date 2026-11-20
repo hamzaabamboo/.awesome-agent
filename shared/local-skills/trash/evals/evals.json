@@ -1,0 +1,29 @@
+{
+  "skill_name": "trash",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Decision-path probe only; do not implement or launch tools. A developer has rejected the entire layout of an existing scheduling app and invoked /trash. Earlier session requirements retain Japanese labels, member identity colors, search, month/week switch, keyboard navigation, saved filters, CSV export and mobile use. Current design scatters actions among identical cards. They want a full redo and independent council, not a small patch. Describe the execution sequence and completion gates you would follow in at most 300 words. Do not claim anything has already been executed.",
+      "expected_output": "Substantive composition replacement preserving all named capabilities, current-session recovery, applicable skill synthesis and real rendering plus separate independent review.",
+      "files": [],
+      "expectations": [
+        "Specifies substantive layout/composition replacement rather than cosmetic changes.",
+        "Explicitly retains all eight named capabilities or an unambiguous complete inventory.",
+        "Requires actual rendered/runtime checks before completion.",
+        "Requires a separate independent reviewer rather than builder self-review."
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Decision-path probe only; do not implement or launch tools. /trash was invoked on an editor design. The rejected direction must be replaced, but existing undo/redo, file import/export, selection shortcuts, 320px layout and brand colors stay binding. One installed skill mandates full-screen marketing sections, another favors dense editor layouts. A promising remote skill is uninstalled; installs and uploads are not authorized. The builder proposes self-review as council. Explain the next actions and completion conditions in at most 300 words; do not claim execution.",
+      "expected_output": "Full redo with intact functions and brand, resolve skill mismatch by editor task fit, research only within permissions, no install/upload/deletion, reject self-review as independent council.",
+      "files": [],
+      "expectations": [
+        "Preserves undo/redo, import/export, shortcuts, 320px support and brand colors.",
+        "Resolves conflicting skill recipes by the editor task and constraints.",
+        "Does not install/upload or delete user work under the current permissions.",
+        "Rejects self-review as council and requires actual rendered checks."
+      ]
+    }
+  ]
+}

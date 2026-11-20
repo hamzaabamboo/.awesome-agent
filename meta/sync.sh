@@ -16,6 +16,7 @@ VERBOSE=false
 CLEAN=false
 DRY_RUN=false
 YES=false
+SKILLS_ONLY=false
 SKIP_REMOTE_SKILLS_INSTALL="${SKIP_REMOTE_SKILLS_INSTALL:-false}"
 
 while [[ "$#" -gt 0 ]]; do
@@ -35,6 +36,9 @@ while [[ "$#" -gt 0 ]]; do
         -y|--yes)
             YES=true
             ;;
+        --skills-only)
+            SKILLS_ONLY=true
+            ;;
         *)
             echo "Unknown parameter: $1"
             exit 1
@@ -42,6 +46,16 @@ while [[ "$#" -gt 0 ]]; do
     esac
     shift
 done
+
+if [ "$SKILLS_ONLY" = true ] && [ "$CLEAN" = true ]; then
+    echo "--skills-only cannot be combined with --clean" >&2
+    exit 1
+fi
+
+if [ "$SKILLS_ONLY" = true ] && [ -L "$TARGET_ROOT/.claude/skills" ]; then
+    echo "--skills-only requires a directory at $TARGET_ROOT/.claude/skills; preserving existing symlink" >&2
+    exit 1
+fi
 
 log() {
     if [ "$VERBOSE" = true ]; then
@@ -273,10 +287,12 @@ sync_agents_skill_links() {
     done
 }
 
-sync_claude_skill_links() {
-    local claude_skills="$TARGET_ROOT/.claude/skills"
+sync_relative_skill_links() {
+    local skills_root="$1"
+    local link_prefix="$2"
+    local label="$3"
 
-    run mkdir -p "$claude_skills"
+    run mkdir -p "$skills_root"
 
     if [ ! -d "$BUILD_SKILLS_DIR" ]; then
         return 0
@@ -286,10 +302,10 @@ sync_claude_skill_links() {
         local skill_name
         local target
         skill_name="$(basename "$skill_dir")"
-        target="$claude_skills/$skill_name"
+        target="$skills_root/$skill_name"
 
         if [ -e "$target" ] && [ ! -L "$target" ]; then
-            log "Preserving existing Claude skill: $target"
+            log "Preserving existing $label skill: $target"
             continue
         fi
 
@@ -297,8 +313,16 @@ sync_claude_skill_links() {
             run rm -f "$target"
         fi
 
-        run ln -s "../../.agents/skills/$skill_name" "$target"
+        run ln -s "$link_prefix/.agents/skills/$skill_name" "$target"
     done
+}
+
+sync_claude_skill_links() {
+    sync_relative_skill_links "$TARGET_ROOT/.claude/skills" "../.." "Claude"
+}
+
+sync_antigravity_skill_links() {
+    sync_relative_skill_links "$TARGET_ROOT/.gemini/config/skills" "../../.." "Antigravity"
 }
 
 sync_hermes_skills() {
@@ -496,7 +520,9 @@ if [ "$CLEAN" = true ]; then
     clean_broken_symlinks
 fi
 
-clean_claude_paths
+if [ "$SKILLS_ONLY" = false ]; then
+    clean_claude_paths
+fi
 
 run rm -rf "$BUILD_SKILLS_DIR"
 run mkdir -p "$BUILD_SKILLS_DIR"
@@ -509,25 +535,34 @@ run mkdir -p "$TARGET_ROOT/.agent"
 link_path "$BUILD_SKILLS_DIR" "$TARGET_ROOT/.agent/skills"
 run mkdir -p "$TARGET_ROOT/.agents"
 sync_agents_skill_links
-sync_hermes_skills
+if [ "$SKILLS_ONLY" = false ]; then
+    sync_hermes_skills
+fi
 
 for agent in gemini claude; do
     run mkdir -p "$TARGET_ROOT/.$agent"
 done
 
 sync_claude_skill_links
+sync_antigravity_skill_links
 
 link_path "$AGENTS_MD" "$TARGET_ROOT/.claude/CLAUDE.md"
 link_path "$AGENTS_MD" "$TARGET_ROOT/.gemini/GEMINI.md"
 
-sync_claude_commands
-sync_gemini_commands
+if [ "$SKILLS_ONLY" = false ]; then
+    sync_claude_commands
+    sync_gemini_commands
+fi
 # sync_wrappers
 # sync_launch_agents
 
-reset_dir "$TARGET_ROOT/.claude/rules"
+if [ "$SKILLS_ONLY" = false ]; then
+    reset_dir "$TARGET_ROOT/.claude/rules"
+fi
 link_path "$AGENTS_MD" "$TARGET_ROOT/.codex/AGENTS.md"
-clean_legacy_skill_links
+if [ "$SKILLS_ONLY" = false ]; then
+    clean_legacy_skill_links
+fi
 install_remote_skills
 
 echo "---"
@@ -535,3 +570,4 @@ echo "Sync complete."
 echo "Canonical prompt: $AGENTS_MD"
 echo "Canonical skills: $TARGET_ROOT/.agent/skills"
 echo "Global skills: $TARGET_ROOT/.agents/skills"
+echo "Antigravity skills: $TARGET_ROOT/.gemini/config/skills"

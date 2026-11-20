@@ -36,6 +36,13 @@ Flags:
 - `-c`, `--clean`: remove broken links and stale repo-managed skill links
 - `-d`, `--dry-run`: show intended filesystem actions without writing
 - `-y`, `--yes`: non-interactive mode
+- `--skills-only`: sync managed skills and prompts without resetting commands/rules, changing Hermes settings, or cleaning legacy links. Rejects a symlinked `.claude/skills` root before writing. Incompatible with `--clean`. Remote installation still follows `SKIP_REMOTE_SKILLS_INSTALL`.
+
+For local skill/prompt maintenance without remote installation:
+
+```bash
+DO_NOT_TRACK=1 SKIP_REMOTE_SKILLS_INSTALL=true ./meta/sync.sh --skills-only --yes
+```
 
 ### Edit operating rules / persona
 
@@ -56,6 +63,14 @@ Put it in `shared/local-skills/<name>/SKILL.md` or `shared/local-skills/<name>.m
 Add the repo to `shared/remote-skills.txt`, then run `./meta/sync.sh --yes`.
 
 Use `repo`, `repo|skill`, or `repo|skill|agent` lines. `agent` is passed to `npx skills add -a`.
+
+## Harness regression checks
+
+Run `bash meta/check-harness.sh` for serial installer, sync, prompt, preservation and evaluator checks with telemetry disabled and thread caps.
+
+For cross-agent experiments, `python3 meta/harness_eval.py prepare <run-name>` creates a fresh local fixture. Give only its task file to the candidate agent. Then run `python3 meta/harness_eval.py grade <run-name> --output <report.json>` independently. Missing actions, altered protected files, malformed outputs, premature exits and runtime mutations fail the gate. The workspace is not an OS sandbox; use only trusted agents. Experiments never operate on live automations.
+
+An optional `--contract` on prepare creates an experimental task contract. It is not a default steering change; the initial cross-AI trial did not demonstrate an advantage.
 
 ## Skill Visibility
 

@@ -53,6 +53,11 @@ test_transform() {
         exit 1
     fi
 
+    if [ "$(readlink "$HOME_MOCK/.gemini/config/skills/test_sync_flat")" != "../../../.agents/skills/test_sync_flat" ] || [ ! -f "$HOME_MOCK/.gemini/config/skills/test_sync_flat/SKILL.md" ]; then
+        echo "FAIL: Antigravity skill should be linked through global skill root"
+        exit 1
+    fi
+
     if [ -e "$HOME_MOCK/.gemini/skills" ]; then
         echo "FAIL: Gemini legacy skill root should not be managed"
         exit 1

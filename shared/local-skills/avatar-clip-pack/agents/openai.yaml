@@ -1,0 +1,4 @@
+interface:
+  display_name: "Avatar Clip Pack"
+  short_description: "Generate and build seamless talking-avatar clips"
+  default_prompt: "Use $avatar-clip-pack to produce the hub, mouth stills and clips for this avatar and build a playable pack."

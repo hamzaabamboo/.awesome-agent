@@ -128,6 +128,9 @@ test_prompt_unification() {
     assert_contains "$AGENTS_FILE" "A bounded read is never a full read"
     assert_contains "$AGENTS_FILE" "This does not authorize selecting unrelated files or expanding GYST into broad research"
     assert_contains "$AGENTS_FILE" "Every invoked skill is a full-read gate"
+    assert_contains "$AGENTS_FILE" "A skill named by the user for the active task is an explicit execution obligation"
+    assert_contains "$AGENTS_FILE" "compact per-skill checklist"
+    assert_contains "$AGENTS_FILE" "reconcile every explicitly invoked skill against that checklist"
     assert_contains "$AGENTS_FILE" 'read its complete `SKILL.md` and every required linked instruction'
     assert_contains "$AGENTS_FILE" "Project-owned artifacts only"
     assert_contains "$AGENTS_FILE" "browser-hosted Claude/Claude in Chrome"
@@ -135,7 +138,33 @@ test_prompt_unification() {
     assert_contains "$AGENTS_FILE" "If the user interrupts a wait or poll, stop polling immediately"
     assert_contains "$AGENTS_FILE" "Run commands one by one unless the user explicitly asks for batching"
     assert_contains "$AGENTS_FILE" "## Skill Routing Map"
-    assert_contains "$AGENTS_FILE" "Load skills before designing, never retrofit them afterward"
+    assert_contains "$AGENTS_FILE" "Resolve the artifact being designed from the active request and project before routing"
+    assert_contains "$AGENTS_FILE" "Load the selected skills before producing the artifact"
+    assert_contains "$AGENTS_FILE" "## Harness experiments"
+    assert_contains "$AGENTS_FILE" "Keep independent task attempts separate from repeated grading of the same output"
+    assert_contains "$AGENTS_FILE" 'Evaluate `redesign-existing-projects` for redesign tasks'
+    assert_contains "$AGENTS_FILE" "Every design request starts with the full installed design-skill catalog"
+    assert_contains "$AGENTS_FILE" "Execute all matching compatible skills"
+    assert_contains "$AGENTS_FILE" "Design decisions require motivation before implementation"
+    assert_contains "$AGENTS_FILE" "present 2–3 materially different viable alternatives"
+    assert_contains "$AGENTS_FILE" "wait for the user's choice"
+    assert_contains "$SKILLS_TARGET/trash/SKILL.md" "present them for the user to choose, combine or narrow"
+    assert_contains "$SKILLS_TARGET/trash/SKILL.md" "record the motivation for each material replacement"
+    assert_contains "$AGENTS_FILE" 'Severe rejection of the whole design or `/trash`: `trash`'
+    assert_contains "$AGENTS_FILE" 'Every audit and redesign requires `the-council` with a separate independent agent'
+    assert_contains "$AGENTS_FILE" 'UIZZE reference research is required for every UI design, redesign and visual audit'
+    assert_contains "$SKILLS_TARGET/trash/SKILL.md" 'UIZZE reference research is a required stage, not optional inspiration'
+    assert_contains "$SKILLS_TARGET/trash/SKILL.md" 'A wording, color or spacing patch does not satisfy this request'
+    assert_contains "$SKILLS_TARGET/trash/SKILL.md" 'A self-review, multiple roles played by one agent'
+    assert_contains "$AGENTS_FILE" "Resolve contradictory recipes explicitly"
+    assert_contains "$AGENTS_FILE" "distinguish preview geometry from exported output"
+    assert_contains "$AGENTS_FILE" "Skill recipes never authorize invented statistics, dates, brands"
+    assert_contains "$AGENTS_FILE" "never read whole logs for metadata selection"
+    assert_contains "$AGENTS_FILE" "Keep transient source locators until independent verification finishes"
+    assert_contains "$AGENTS_FILE" "reuse verified inherited opt-outs instead of repeating them inline"
+    assert_contains "$AGENTS_FILE" 'Data-bearing UI design or dogfood content stress: `break-ui`'
+    assert_contains "$SKILLS_TARGET/agent-browser-dogfood/SKILL.md" '~/.awesome-agent/shared/design-data-stress.md'
+    assert_contains "$SKILLS_TARGET/agent-browser-dogfood/SKILL.md" 'Keep the initial pass black-box'
     assert_contains "$AGENTS_FILE" "## Canonical Current-Task Record and Continuation Recovery"
     assert_contains "$AGENTS_FILE" 'In this repository the canonical path is `conductor/CURRENT_TASK.md`'
     assert_contains "$AGENTS_FILE" "check Goal state when available"

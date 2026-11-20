@@ -106,6 +106,8 @@ agent-browser --session {SESSION} console
 
 Use your judgment on how deep to go. Spend more time on core features and less on peripheral pages. If you find a cluster of issues in one area, investigate deeper.
 
+For data-bearing screens, follow `~/.awesome-agent/shared/design-data-stress.md` after the normal-state pass to run `break-ui` within the task's permissions and existing browser session.
+
 ### 5. DOCUMENT ISSUES (REPRO-FIRST)
 
 Steps 4 and 5 happen together -- explore and document in a single pass. When you find an issue, stop exploring and document it immediately before moving on. Do not explore the whole app first and document later.
@@ -186,7 +188,7 @@ agent-browser --session {SESSION} close
 * **Be thorough but use judgment.** You are not following a test script -- you are exploring like a real user would. If something feels off, investigate.
 * **Write findings incrementally.** Append each issue to the report as you discover it. If the session is interrupted, findings are preserved. Never batch all issues for the end.
 * **Never delete output files.** Do not `rm` screenshots, videos, or the report mid-session. Do not close the session and restart. Work forward, not backward.
-* **Never read the target app's source code.** You are testing as a user, not auditing code. Do not read HTML, JS, or config files of the app under test. All findings must come from what you observe in the browser.
+* **Keep the initial pass black-box.** Source access is limited to the component/schema mapping needed by the authorized `break-ui` stage above. All visual findings still require browser observations; source inspection is not proof.
 * **Check the console.** Many issues are invisible in the UI but show up as JS errors or failed requests.
 * **Test like a user, not a robot.** Try common workflows end-to-end. Click things a real user would click. Enter realistic data.
 * **Type like a human.** When filling form fields during video recording, use `type` instead of `fill` -- it types character-by-character. Use `fill` only outside of video recording when speed matters.
