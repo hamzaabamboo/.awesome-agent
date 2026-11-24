@@ -291,14 +291,15 @@ sync_relative_skill_links() {
     local skills_root="$1"
     local link_prefix="$2"
     local label="$3"
+    local source_root="${4:-$BUILD_SKILLS_DIR}"
 
     run mkdir -p "$skills_root"
 
-    if [ ! -d "$BUILD_SKILLS_DIR" ]; then
+    if [ ! -d "$source_root" ]; then
         return 0
     fi
 
-    find "$BUILD_SKILLS_DIR" -mindepth 1 -maxdepth 1 -type d | sort | while read -r skill_dir; do
+    find -L "$source_root" -mindepth 1 -maxdepth 1 -type d ! -name '.*' | sort | while read -r skill_dir; do
         local skill_name
         local target
         skill_name="$(basename "$skill_dir")"
@@ -322,7 +323,7 @@ sync_claude_skill_links() {
 }
 
 sync_antigravity_skill_links() {
-    sync_relative_skill_links "$TARGET_ROOT/.gemini/config/skills" "../../.." "Antigravity"
+    sync_relative_skill_links "$TARGET_ROOT/.gemini/config/skills" "../../.." "Antigravity" "$TARGET_ROOT/.agents/skills"
 }
 
 sync_hermes_skills() {
