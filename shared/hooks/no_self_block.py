@@ -12,6 +12,11 @@ import re
 import sys
 
 ENDING_CHARS = 400
+OPENING_CHARS = 200
+REFLEXIVE = re.compile(
+    r"(?:^|[\n.!?]\s*)(?:you(?:'re| are) (?:absolutely )?right|good catch|got it|understood|i understand"
+    r"|(?:my )?apologies|sorry)\b",
+    re.IGNORECASE)
 QUOTED = re.compile(r"```.*?```|`[^`\n]*`|\"[^\"\n]*\"|“[^”\n]*”|‘[^’\n]*’", re.DOTALL)
 NEGATION = re.compile(r"\b(nothing|none|no|not|never|0|zero)\b[^.\n]{0,20}$", re.IGNORECASE)
 FOLLOWING_NONE = re.compile(r"\s*(none|nothing|no\b|n/a|0\b|zero\b|—|-\s*$)", re.IGNORECASE)
@@ -21,7 +26,8 @@ PATTERNS = [
         r"\b(should i|shall i|may i)\b[^\n?]*\?"
         r"|\b(want me to|do you want me to|would you like( me)? to)\b"
         r"|\bwhich (one|option)\b[^\n?]*\?"
-        r"|\bsay if you want\b|\bsay so and i(?:'ll| will)\b|\blet me know if you(?:'d| would)? (?:want|like)\b",
+        r"|\bsay if you want\b|\bsay so and i(?:'ll| will)\b|\blet me know if you(?:'d| would)? (?:want|like)\b"
+        r"|\b(?:the choice is yours|your call|up to you|pick one|you decide)\b",
         re.IGNORECASE)),
     ("declares itself blocked or waiting on the user", True, re.compile(
         r"(?:^|[\n.!?]\s*)blocked\s*[:\-—]|(?<!was )(?<!were )\bstill blocked\b"
@@ -95,8 +101,10 @@ def main():
     message = payload.get("last_assistant_message")
     if not isinstance(message, str) or not message.strip():
         message = last_assistant_text(payload.get("transcript_path"))
-    ending = re.sub(r"[*_]+", "", QUOTED.sub(" ", message)).replace("\u2019", "'").replace("\u2018", "'")[-ENDING_CHARS:]
-    hits = [label for label, negatable, pattern in PATTERNS if matches(pattern, ending, negatable)]
+    plain = re.sub(r"[*_]+", "", QUOTED.sub(" ", message)).replace("\u2019", "'").replace("\u2018", "'")
+    hits = [label for label, negatable, pattern in PATTERNS if matches(pattern, plain[-ENDING_CHARS:], negatable)]
+    if REFLEXIVE.search(plain[:OPENING_CHARS]):
+        hits.append("opens with reflexive agreement instead of the concrete mistake and fix")
     if not hits:
         sys.exit(0)
     print(json.dumps({"decision": "block", "reason": INSTRUCTION.format(what=" and ".join(hits))}))
