@@ -281,6 +281,7 @@ Every audit and redesign requires `the-council` with a separate independent agen
 
 ### Browser and quality audits
 - Driving a browser or verifying UI: `agent-browser` (launch arguments per the hard limits above). Exploratory QA: `dogfood` or `agent-browser-dogfood`.
+- Keep the agent toolchain on its latest releases. Daily skills/config maintenance must run `meta/update-toolchain.sh` after confirming `agent-browser session list` shows no active sessions. The script upgrades the Claude Code and Codex Homebrew casks and every node install's global `agent-browser`. Run the skills CLI as `skills@latest`, not an old pinned version. Updating skills never updates agent-browser, because its skill is a stub that serves instructions from the installed CLI. Report before and after versions. When a briefing finds a newer toolchain release, update it; never present a stale tool as an experiment to try later.
 - Project uses Playwright, or a trace/codegen is needed: `playwright-cli`.
 - Data-bearing UI design or dogfood content stress: `break-ui` after normal-state checks; follow `~/.awesome-agent/shared/design-data-stress.md`. Static branding-only work skips this branch.
 - Audits: `web-quality-audit` for a broad pass; `accessibility`, `core-web-vitals`, `performance`, or `seo` for one area.
