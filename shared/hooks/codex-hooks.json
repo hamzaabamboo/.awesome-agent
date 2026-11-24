@@ -9,6 +9,37 @@
             "timeout": 10
           }
         ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 /Users/vittayapalotai.tanyawat/.awesome-agent/shared/hooks/agent_gates.py stop",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 /Users/vittayapalotai.tanyawat/.awesome-agent/shared/hooks/agent_gates.py prompt",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 /Users/vittayapalotai.tanyawat/.awesome-agent/shared/hooks/agent_gates.py posttool",
+            "timeout": 10
+          }
+        ]
       }
     ]
   }
