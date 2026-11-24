@@ -58,6 +58,11 @@ test_transform() {
         exit 1
     fi
 
+    if [ "$(readlink "$HOME_MOCK/.gemini/config/hooks.json")" != "$PWD/shared/hooks/antigravity-hooks.json" ] || [ "$(readlink "$HOME_MOCK/.codex/hooks.json")" != "$PWD/shared/hooks/codex-hooks.json" ]; then
+        echo "FAIL: Antigravity and Codex hook configs should link to the repo"
+        exit 1
+    fi
+
     if [ -e "$HOME_MOCK/.gemini/skills" ]; then
         echo "FAIL: Gemini legacy skill root should not be managed"
         exit 1

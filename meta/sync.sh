@@ -561,6 +561,8 @@ if [ "$SKILLS_ONLY" = false ]; then
     reset_dir "$TARGET_ROOT/.claude/rules"
 fi
 link_path "$AGENTS_MD" "$TARGET_ROOT/.codex/AGENTS.md"
+link_path "$PROJECT_ROOT/shared/hooks/codex-hooks.json" "$TARGET_ROOT/.codex/hooks.json"
+link_path "$PROJECT_ROOT/shared/hooks/antigravity-hooks.json" "$TARGET_ROOT/.gemini/config/hooks.json"
 if [ "$SKILLS_ONLY" = false ]; then
     clean_legacy_skill_links
 fi

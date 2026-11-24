@@ -27,7 +27,11 @@ Evidence was read from the T3 thread histories, the session transcripts (bounded
 
 ## Repairs
 
-All gates live in one script, `shared/hooks/agent_gates.py`, wired for both Claude Code (`~/.claude/settings.json`) and Codex (`shared/hooks/codex-hooks.json`, hooks trusted in `~/.codex/config.toml`).
+All gates live in one script, `shared/hooks/agent_gates.py`, wired for:
+
+- **Claude Code:** `~/.claude/settings.json`.
+- **Codex:** `shared/hooks/codex-hooks.json`, with the hooks trusted in `~/.codex/config.toml`.
+- **Antigravity:** `shared/hooks/antigravity-hooks.json`, linked by sync to `~/.gemini/config/hooks.json`. The `agy` mode injects named skills and file-split notices at `PreInvocation`, tracks file growth at `PostToolUse`, and continues the loop at `Stop` while a named skill is unreported.
 
 - **`prompt` (UserPromptSubmit):** injects the full `SKILL.md` for every installed skill named with `$name` or `/name`, and records the names for the stop gate.
 - **`pretool` (PreToolUse, Claude):** refuses the first tool call after each unanswered mid-turn message with a reply-first instruction, and loads any skill that message names. It allows the call once the message has a text reply or has already been reminded.
@@ -49,11 +53,12 @@ All gates live in one script, `shared/hooks/agent_gates.py`, wired for both Clau
 - `tests/test_agent_gates.sh` (29 cases) and `tests/test_no_self_block.sh` both pass, and both run in `meta/check-harness.sh`.
 - **Codex, live:** `codex exec` with a prompt naming `$test_skill` ran the UserPromptSubmit and Stop hooks, and the reply reported the skill.
 - **Claude, live:** `claude -p` with the same prompt injected the skill. The agent first replied with only "OK"; the stop gate refused that, and the rewritten reply reported the skill.
+- **Antigravity, live:** `agy -p` with the same prompt. The hook's system message was step 1 of the transcript, the agent read `SKILL.md`, and its reply reported the skill.
 - **Pretool gate, live:** it fired once in the authoring session on a mid-turn message and allowed the retry.
 
 ## Gaps
 
-- **Antigravity has no hook system** (its config holds only `userSettings`), so the rules apply there through the prompt only.
+- **Antigravity has no mid-turn message gate.** Antigravity reports new user input through `PreInvocation`, which re-injects any skill named there. An earlier draft of this report said Antigravity had no hooks; that came from reading one config file, and the binary's built-in hook documentation proved it wrong.
 - **Codex has no mid-turn message records** in 60 recent sessions. Messages arrive as new prompts and are covered by the `prompt` gate. A future Codex steering mode would need its own check.
 - **Some failures have prose rules only:** measurement, gate-weakening and requirement recording have no mechanical check.
 - **Reporting is not executing:** the stop gate proves a named skill was reported, not that every step of its procedure was executed.

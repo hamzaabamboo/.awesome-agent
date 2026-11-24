@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
-"""Shared hook gates for Claude Code and Codex: `agent_gates.py prompt|pretool|posttool|stop`.
+"""Shared hook gates for Claude Code, Codex (`prompt|pretool|posttool|stop`) and Antigravity (`agy`).
 
 prompt    inject every installed skill the user names ($name or /name) and record it for the stop gate
 pretool   remind once per mid-turn message (Claude queued_command) to reply first; load skills it names
 posttool  tell the agent to split a code file an edit grew past MAX_LINES
 stop      refuse to end a turn whose final message does not report each named skill
+agy       Antigravity hooks.json adapter: PreInvocation injects skills and split notices, PostToolUse tracks
+          file growth, Stop continues the loop while a named skill is unreported
 """
 import json
 import os
@@ -172,10 +174,10 @@ def edited_paths(payload):
     return [Path(cwd, p) for p in dict.fromkeys(paths)]
 
 
-def on_posttool(payload, state):
+def oversized_files(paths, state):
     sizes = state.setdefault("lines", {})
     oversized = []
-    for path in edited_paths(payload):
+    for path in paths:
         if path.suffix not in CODE_EXT or SKIP_PARTS & set(path.parts) or ".min." in path.name:
             continue
         try:
@@ -186,13 +188,30 @@ def on_posttool(payload, state):
         sizes[str(path)] = count
         if count > MAX_LINES and (before is None or count > before):
             oversized.append(f"{path} ({count} lines)")
+    return oversized
+
+
+def split_message(oversized):
+    return (
+        f"Code file over {MAX_LINES} lines and growing: " + ", ".join(oversized) + ". Before adding more, split it "
+        "by responsibility into cohesive modules with explicit imports, remove duplication, keep behavior "
+        "identical, and run the project's existing checks. Code that is reused, re-run or committed is "
+        "production code: structure it properly, cache expensive repeated work, follow the language's best practices."
+    )
+
+
+def unreported_message(missing):
+    return (
+        "The user named these skills this turn and your final message does not report them: " + ", ".join(missing)
+        + ". Execute each one's remaining required steps now, then rewrite the final message reporting each "
+        "skill by name with the steps executed and any unmet gate."
+    )
+
+
+def on_posttool(payload, state):
+    oversized = oversized_files(edited_paths(payload), state)
     if oversized:
-        emit({"decision": "block", "reason": (
-            f"Code file over {MAX_LINES} lines and growing: " + ", ".join(oversized) + ". Before adding more, split it "
-            "by responsibility into cohesive modules with explicit imports, remove duplication, keep behavior "
-            "identical, and run the project's existing checks. Code that is reused, re-run or committed is "
-            "production code: structure it properly, cache expensive repeated work, follow the language's best practices."
-        )})
+        emit({"decision": "block", "reason": split_message(oversized)})
 
 
 def last_assistant_text(path):
@@ -218,16 +237,62 @@ def on_stop(payload, state):
         return
     missing = [name for name in names if name not in message]
     if missing:
-        emit({"decision": "block", "reason": (
-            "The user named these skills this turn and your final message does not report them: " + ", ".join(missing)
-            + ". Execute each one's remaining required steps now, then rewrite the final message reporting each "
-            "skill by name with the steps executed and any unmet gate."
-        )})
+        emit({"decision": "block", "reason": unreported_message(missing)})
     else:
         state["turn_skills"] = []
 
 
-HANDLERS = {"prompt": on_prompt, "pretool": on_pretool, "posttool": on_posttool, "stop": on_stop}
+def agy_paths(payload):
+    args = (payload.get("toolCall") or {}).get("args") or {}
+    paths = [
+        value.strip().strip('"') for key, value in args.items()
+        if isinstance(value, str) and ("File" in key or "Path" in key)
+    ]
+    cwd = payload.get("cwd") or os.getcwd()
+    return [Path(cwd, p) for p in paths if p]
+
+
+def agy_final_text(path):
+    if not isinstance(path, str) or not os.path.isfile(path):
+        return None
+    for record in tail_records(path, b"PLANNER_RESPONSE"):
+        if record.get("type") == "PLANNER_RESPONSE" and str(record.get("content", "")).strip():
+            return record["content"]
+    return None
+
+
+def on_agy(payload, state):
+    event = payload.get("hookEventName")
+    if event == "PreInvocation":
+        steps = []
+        text = payload.get("lastUserInput")
+        if isinstance(text, str) and text != state.get("agy_last_input"):
+            state["agy_last_input"] = text
+            state["turn_skills"] = named_skills(text)
+            if state["turn_skills"]:
+                steps.append(skill_context(state["turn_skills"]))
+        if state.get("agy_split"):
+            steps.append(split_message(state.pop("agy_split")))
+        emit({"injectSteps": [{"systemMessage": {"systemMessage": step}} for step in steps]})
+    elif event == "PostToolUse":
+        oversized = oversized_files(agy_paths(payload), state)
+        if oversized:
+            state["agy_split"] = list(dict.fromkeys(state.get("agy_split", []) + oversized))
+        emit({})
+    elif event == "Stop":
+        names = state.get("turn_skills") or []
+        message = agy_final_text(payload.get("transcriptPath"))
+        missing = [name for name in names if not message or name not in message]
+        if missing and not payload.get("continuationActive"):
+            emit({"decision": "continue", "reason": unreported_message(missing)})
+        else:
+            state["turn_skills"] = []
+            emit({})
+    else:
+        emit({})
+
+
+HANDLERS = {"prompt": on_prompt, "pretool": on_pretool, "posttool": on_posttool, "stop": on_stop, "agy": on_agy}
 
 
 def main():
@@ -238,7 +303,8 @@ def main():
         return
     if not handler or not isinstance(payload, dict):
         return
-    session = re.sub(r"[^A-Za-z0-9_-]", "_", str(payload.get("session_id") or "default"))[:128]
+    raw_session = payload.get("session_id") or payload.get("conversationId") or "default"
+    session = re.sub(r"[^A-Za-z0-9_-]", "_", str(raw_session))[:128]
     state = load_state(session)
     try:
         handler(payload, state)

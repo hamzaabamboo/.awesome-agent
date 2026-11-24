@@ -69,6 +69,17 @@ expect post_vendor empty "$(post node_modules/lib.js)"
 patch_input="$(python3 -c 'import json; print(json.dumps({"session_id":"f2","cwd":"'"$work/src"'","tool_name":"apply_patch","tool_input":{"input":"*** Begin Patch\n*** Update File: big.py\n@@\n*** End Patch"}}))')"
 expect post_codex_patch '"decision": "block"' "$(run posttool "$patch_input")"
 
+agy() { python3 -c 'import json,sys; d={"conversationId":"g1","cwd":sys.argv[1],"transcriptPath":sys.argv[2]}; d.update(json.loads(sys.argv[3])); print(json.dumps(d))' "$work/src" "$work/agy.jsonl" "$1"; }
+printf '%s\n' '{"type":"USER_INPUT","content":"go"}' '{"type":"PLANNER_RESPONSE","content":"Done."}' > "$work/agy.jsonl"
+expect agy_inject_skill '"systemMessage": "The user named these skills: demo-skill' "$(run agy "$(agy '{"hookEventName":"PreInvocation","lastUserInput":"fix it $demo-skill"}')")"
+expect agy_same_input_no_reinject '{"injectSteps": []}' "$(run agy "$(agy '{"hookEventName":"PreInvocation","lastUserInput":"fix it $demo-skill"}')")"
+expect agy_stop_continue '"decision": "continue"' "$(run agy "$(agy '{"hookEventName":"Stop"}')")"
+expect agy_stop_loop_guard '{}' "$(run agy "$(agy '{"hookEventName":"Stop","continuationActive":true}')")"
+expect agy_post_big '{}' "$(run agy "$(agy '{"hookEventName":"PostToolUse","toolCall":{"name":"write_to_file","args":{"TargetFile":"\"big.py\""}}}')")"
+expect agy_split_notice 'over 500 lines' "$(run agy "$(agy '{"hookEventName":"PreInvocation","lastUserInput":"next"}')")"
+printf '%s\n' '{"type":"PLANNER_RESPONSE","content":"demo-skill: 2/2 steps done."}' >> "$work/agy.jsonl"
+expect agy_stop_reported '{}' "$(run agy "$(agy '{"hookEventName":"PreInvocation","lastUserInput":"use /demo-skill"}' >/dev/null; run agy "$(agy '{"hookEventName":"Stop"}')")")"
+
 expect bad_json empty "$(run stop 'not json')"
 expect bad_mode empty "$(run nope '{}')"
 
