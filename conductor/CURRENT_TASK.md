@@ -1,8 +1,26 @@
-# Harness postmortem — 2026-11-25
+# Daily skills/config maintenance — 2026-11-25
 
-- Correction (GYST): Antigravity was reported as having no hook system, based only on `~/.gemini/config/config.json` containing one key.
-- Mistake: an absent capability was inferred from one config file. The Antigravity binary documents `hooks.json` (in `~/.gemini/config/` and `.agents/`) with PreInvocation, PreToolUse, PostToolUse, SessionStart and Stop events. Source: the `/opt/homebrew/bin/agy` built-in docs.
-- Rule change: `shared/core_profile.md` now requires a capability claim to be checked against the tool's docs or binary, and the named-skill rule now lists Antigravity hooks.
-- Action: `shared/hooks/agent_gates.py agy` adapter; `shared/hooks/antigravity-hooks.json`; `meta/sync.sh` links the Codex and Antigravity hook configs; tests cover all three agents.
-- Verification: live `agy -p` injected `test_skill` and the reply reported it; live Codex and Claude runs had already passed; check-harness passes.
-- Open: postmortem gaps in `analysis/postmortem-2026-11-24/report.md`. The prior maintenance open items are unchanged.
+- Disk: 2.6 GiB free at start; own build outputs total 13 MB, so `mo clean` ran after a clean dry run (no sudo prompt), leaving 5.1 GiB free.
+- Toolchain (meta/update-toolchain.sh, after `agent-browser session list` showed none), exit 0:
+  - Claude Code cask 2.1.331 → 2.1.332.
+  - Codex cask 0.172.0, already current.
+  - agent-browser 0.44.0 on both node installs (22.23.4, 24.22.1).
+  - skills CLI latest 1.9.0.
+- Skills:
+  - Reused the 253-name selection from `.build/daily-maintenance-2026-11-24/update-selection.json`. Explicit-name global update on skills@latest with SKILLS_CLONE_CONCURRENCY=1.
+  - Content changed in 20 skills: chief-of-staff, figma, hyperframes, media-use, remotion-to-hyperframes, stitch-extract-design-md, ui-ux-pro-max, and 13 remotion-* skills (best-practices, captions, create, docs, interactivity, license, maps, markup, multimedia, render, saas, studio, upgrade).
+  - 294 skill directories, all with entrypoints. No additions or removals. Lock is still format 3 with 272 keys.
+  - CLI exited 1, again from the legacy react:components entry ("No matching skills found").
+  - New: the stablyai/orca check now succeeds (yesterday it failed) and reports `computer-use` deleted upstream. The local copy is kept because the CLI skips deletion in non-interactive mode; routing already forbids it. Other upstream-deleted notices are unchanged: stitch-design, the 3 taste-skill entries, resolving-merge-conflicts, and the hyperframes video skills.
+- Sync and checks:
+  - Skills-only sync with SKIP_REMOTE_SKILLS_INSTALL=true, exit 0. It runs no launch-agent, command or hermes paths.
+  - Prompt links for Claude, Gemini and Codex resolve to shared/AGENTS.md. The Codex and Antigravity hook links resolve into shared/hooks.
+  - Antigravity skill links: 294/294 present. avatar-clip-pack resolves under Claude and Antigravity.
+  - Serial `bash meta/check-harness.sh` exit 0. The file is mode 100644, so running it as `./` fails with exit 126.
+- Telemetry and scope: DO_NOT_TRACK=1, DISABLE_TELEMETRY=1 and HOMEBREW_NO_ANALYTICS=1 throughout. No services, audio or browser settings touched. No paid APIs, cloud rendering, reporting, PRs, merges or deployment. No hyperframes or caveman command run.
+- Preservation: the 94 pre-existing untracked files (conductor/discovery, local only because the repo is public) are unchanged. Logs, selection, lock and hashes are in .build/daily-maintenance-2026-11-25/.
+- Open, needs a separate request:
+  - Claude Code 2.1.332 truncates hook output at about 50k characters. `shared/hooks/agent_gates.py` still inlines up to 60,000, so a named `$antislop` (53,842 bytes) now arrives truncated. Fix: a cap of about 45k for all injected text plus a fallback test (conductor/discovery/2026-11-25.md item 1).
+  - Postmortem gaps: analysis/postmortem-2026-11-24/report.md.
+  - Unchanged from earlier runs: the HyperFrames `events` command is not on the never-run list; 14 retired HyperFrames routes remain at shared/skill_system.md:124; the full caveman package installs Caveman Cloud skills; software-factory is absent; react:components fails every update; the Codex wrapper pins no model.
+- Git: fetched before work and again before publishing. Commit only this record, as Tanyawat Vittayapalotai <hamzaabamboo@gmail.com> with no agent attribution, then verify live remote and local heads are equal.
