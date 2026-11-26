@@ -1,26 +1,11 @@
-# Daily skills/config maintenance — 2026-11-25
+# Daily skills/config maintenance — 2026-11-26
 
-- Disk: 2.6 GiB free at start; own build outputs total 13 MB, so `mo clean` ran after a clean dry run (no sudo prompt), leaving 5.1 GiB free.
-- Toolchain (meta/update-toolchain.sh, after `agent-browser session list` showed none), exit 0:
-  - Claude Code cask 2.1.331 → 2.1.332.
-  - Codex cask 0.172.0, already current.
-  - agent-browser 0.44.0 on both node installs (22.23.4, 24.22.1).
-  - skills CLI latest 1.9.0.
-- Skills:
-  - Reused the 253-name selection from `.build/daily-maintenance-2026-11-24/update-selection.json`. Explicit-name global update on skills@latest with SKILLS_CLONE_CONCURRENCY=1.
-  - Content changed in 20 skills: chief-of-staff, figma, hyperframes, media-use, remotion-to-hyperframes, stitch-extract-design-md, ui-ux-pro-max, and 13 remotion-* skills (best-practices, captions, create, docs, interactivity, license, maps, markup, multimedia, render, saas, studio, upgrade).
-  - 294 skill directories, all with entrypoints. No additions or removals. Lock is still format 3 with 272 keys.
-  - CLI exited 1, again from the legacy react:components entry ("No matching skills found").
-  - New: the stablyai/orca check now succeeds (yesterday it failed) and reports `computer-use` deleted upstream. The local copy is kept because the CLI skips deletion in non-interactive mode; routing already forbids it. Other upstream-deleted notices are unchanged: stitch-design, the 3 taste-skill entries, resolving-merge-conflicts, and the hyperframes video skills.
-- Sync and checks:
-  - Skills-only sync with SKIP_REMOTE_SKILLS_INSTALL=true, exit 0. It runs no launch-agent, command or hermes paths.
-  - Prompt links for Claude, Gemini and Codex resolve to shared/AGENTS.md. The Codex and Antigravity hook links resolve into shared/hooks.
-  - Antigravity skill links: 294/294 present. avatar-clip-pack resolves under Claude and Antigravity.
-  - Serial `bash meta/check-harness.sh` exit 0. The file is mode 100644, so running it as `./` fails with exit 126.
-- Telemetry and scope: DO_NOT_TRACK=1, DISABLE_TELEMETRY=1 and HOMEBREW_NO_ANALYTICS=1 throughout. No services, audio or browser settings touched. No paid APIs, cloud rendering, reporting, PRs, merges or deployment. No hyperframes or caveman command run.
-- Preservation: the 94 pre-existing untracked files (conductor/discovery, local only because the repo is public) are unchanged. Logs, selection, lock and hashes are in .build/daily-maintenance-2026-11-25/.
-- Open, needs a separate request:
-  - Claude Code 2.1.332 truncates hook output at about 50k characters. `shared/hooks/agent_gates.py` still inlines up to 60,000, so a named `$antislop` (53,842 bytes) now arrives truncated. Fix: a cap of about 45k for all injected text plus a fallback test (conductor/discovery/2026-11-25.md item 1).
-  - Postmortem gaps: analysis/postmortem-2026-11-24/report.md.
-  - Unchanged from earlier runs: the HyperFrames `events` command is not on the never-run list; 14 retired HyperFrames routes remain at shared/skill_system.md:124; the full caveman package installs Caveman Cloud skills; software-factory is absent; react:components fails every update; the Codex wrapper pins no model.
-- Git: fetched before work and again before publishing. Commit only this record, as Tanyawat Vittayapalotai <hamzaabamboo@gmail.com> with no agent attribution, then verify live remote and local heads are equal.
+- Completed configured updates and skills-only sync. DO_NOT_TRACK=1, DISABLE_TELEMETRY=1 and toolchain telemetry opt-outs enabled. No services, audio, browser settings, PRs, merges, deployment or paid calls.
+- Toolchain: no active agent-browser sessions before update. Both Node installs upgraded agent-browser 0.44.0 → 0.45.0 and their real CLIs report 0.45.0. Claude Code 2.1.332 and Codex 0.172.0 were already current. skills@latest resolved to 1.9.0. Toolchain script exit 0; unrelated Homebrew tap warnings were left alone.
+- Remote update: regenerated a 253-name selection from the 46 configured registry rows and current lock. skills@latest update used global scope, explicit names and clone concurrency 1. Updated 16 skills: domain-modeling, figma, hyperframes, jira-tickets, linear-tickets, media-use, orca-cli, orca-computer-use, orca-emulator, orca-emulator-android, orca-jira, orca-linear, orca-per-workspace-env, orca-plugin-authoring, orchestration, ui-ux-pro-max.
+- Updater exit 1 solely from the existing react:components entry, which returned No matching skills found. Upstream-deleted notices were preserved without automatic removal. Zero added/removed skills and zero unselected skill content changes; lock retains 272 entries.
+- Sync: SKIP_REMOTE_SKILLS_INSTALL=true ./meta/sync.sh --skills-only --yes exit 0. 295/295 global entrypoints and Antigravity targets present; Claude, Gemini and Codex prompt links resolve to shared/AGENTS.md. This includes the pre-existing uncommitted daily-report skill.
+- Verification: serial bash meta/check-harness.sh exit 0 (six shell suites, 19 evaluator tests, nine parser tests). Existing protected files unchanged by content hashes, except this intentionally replaced record. Diff check passed.
+- Preservation: 105 pre-existing files were snapshotted. README, profile, generated prompt, hooks, wrappers, tests, daily-report source and discovery files remain outside this maintenance commit. Previous active harness/Linear/daily-report state is retained at .build/daily-maintenance-2026-11-26/prior-task.md. That work remains active; the T3 picker refresh had not been verified.
+- Git: fetched origin before work and again before commit; no base divergence. Stage and commit only this record using the human identity, then push main and verify live head equality.
+- Evidence: .build/daily-maintenance-2026-11-26/ contains protected hashes, prior task, selected names, before/after skill hashes and toolchain/update/sync/check logs.
