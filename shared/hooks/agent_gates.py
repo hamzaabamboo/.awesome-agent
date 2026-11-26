@@ -138,6 +138,8 @@ def newest_steer(path):
         ):
             prompt = attachment.get("prompt")
             text = prompt if isinstance(prompt, str) else json.dumps(prompt)
+            if NOT_USER.match(text):
+                continue
             return record.get("uuid") or attachment.get("source_uuid") or text, text
     return None, None
 
@@ -151,9 +153,10 @@ def on_pretool(payload, state):
         return
     state["reminded"] = (state.get("reminded", []) + [key])[-200:]
     reason = (
-        "The user sent a message mid-turn. Reply to it in visible text now: one line stating what it changes "
-        "and what you are doing next, about exactly the item named. If it adds or corrects a requirement, record "
-        "it in the task's canonical record. Then retry; this reminder fires once per message."
+        "The user sent a message mid-turn. Answer it now in visible reply text before any tool call: start with "
+        "'YES CHEF', then what it changes and what you do next, about exactly the item named. Thinking is "
+        "invisible to the user; an answer written only in thinking is no answer. If it adds or corrects a "
+        "requirement, record it in the task's canonical record. Then retry; this reminder fires once per message."
     )
     names = named_skills(text)
     if names:
