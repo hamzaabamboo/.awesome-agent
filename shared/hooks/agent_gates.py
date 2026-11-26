@@ -18,15 +18,16 @@ HOME = Path.home()
 SKILL_ROOTS = [HOME / ".claude/skills", HOME / ".agents/skills", HOME / ".codex/skills"]
 STATE_DIR = Path(os.environ.get("AGENT_GATES_STATE", HOME / ".local/state/agent-gates"))
 TAIL_BYTES = 4 * 1024 * 1024
-INJECT_BYTES = 60000
+INJECT_BYTES = 45000
 MAX_LINES = 500
 CODE_EXT = {
     ".py", ".ts", ".tsx", ".js", ".jsx", ".mjs", ".cjs", ".sh", ".bash", ".go", ".rs", ".rb", ".swift",
     ".kt", ".java", ".vue", ".svelte", ".c", ".cc", ".cpp", ".h", ".hpp", ".cs", ".php", ".lua", ".scala",
 }
 SKIP_PARTS = {"node_modules", "dist", "build", "vendor", ".venv", "venv", "__pycache__", ".next", "generated"}
-SKILL_TOKEN = re.compile(r"(?:^|[\s(\[{\"'`])[$/]([a-z][a-z0-9:_-]{1,63})(?=$|[\s)\]}\"'`.,;:!?])", re.MULTILINE)
+SKILL_TOKEN = re.compile(r"(?:^|[\s(\[{\"'])[$/]([a-z][a-z0-9:_-]{1,63})(?=$|[\s)\]}\"'`.,;:!?])", re.MULTILINE)
 EXPANDED = re.compile(r"<command-name>/([a-z0-9:_-]+)</command-name>")
+NOT_USER = re.compile(r"\s*(?:Delegated task \S+ \(|<task-notification)")
 PATCH_PATH = re.compile(r"^\*\*\* (?:Add|Update) File: (.+)$", re.MULTILINE)
 
 
@@ -84,6 +85,8 @@ def emit(obj):
 
 def on_prompt(payload, state):
     text = payload.get("prompt")
+    if isinstance(text, str) and NOT_USER.match(text):
+        return
     expanded = set(EXPANDED.findall(text or ""))
     leading = re.match(r"\s*/([a-z0-9:_-]+)", text or "")
     if leading:
