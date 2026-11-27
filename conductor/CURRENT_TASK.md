@@ -8,6 +8,17 @@
 - Sync: `SKIP_REMOTE_SKILLS_INSTALL=true ./meta/sync.sh --skills-only --yes --verbose` exited 0. 549 global skills in `~/.agents/skills`, 532 Antigravity skills in `~/.gemini/config/skills`; Claude/Gemini/Codex prompt and hook links verified.
 - Verification: serial `bash meta/check-harness.sh` exited 0 (6 shell suites, 19 evaluator tests, 9 parser tests). All 12 protected-file SHA-256 hashes unchanged. Logs in `.build/daily-maintenance-2026-11-27-local/`.
 
+## A298
+- Date: 2026-11-27. `DO_NOT_TRACK=1`, `DISABLE_TELEMETRY=1`, `HOMEBREW_NO_ANALYTICS=1` set. No services, audio, browser settings, PRs, merges, deployment or paid calls.
+- Reconcile: fast-forwarded `main` from `7e1bc5c` to `ae7b9a1` with `--ff-only`. Preserved: unstaged `README.md`, `shared/AGENTS.md`, `shared/core_profile.md`, `shared/hooks/agent_gates.py`, `shared/hooks/no_self_block.py`, `shared/wrappers/{claude,codex}`, `tests/test_no_self_block.sh`; untracked `conductor/discovery/`, `shared/local-skills/daily-report/`.
+- Toolchain: `meta/update-toolchain.sh` exited 0, with no active `agent-browser` sessions. Already current: `claude-code@latest`, `codex`, `agent-browser` 0.45.0 on node 22.23.4 and 24.22.1. `skills@latest` resolved to `1.9.1`. The unrelated `majd/repo` untrusted-tap warning was left alone.
+- Remote update: selected 251 configured skills from 46 rows in `shared/remote-skills.txt`, against `~/.agents/.skill-lock.json` (272 keys). Ran `SKILLS_CLONE_CONCURRENCY=1 npx --yes skills@latest update -g -y` with explicit names.
+  - Changed 5: `ui-ux-pro-max`, `antislop`, `antislop-code`, `antislop-copywriting`, `antislop-human`. None added or removed.
+  - Failed 1: `react:components` with `No matching skills found`.
+  - Upstream-deleted warnings (stitch-skills, taste-skill, mattpocock/skills, hyperframes, orca) preserved without removal.
+- Sync: `SKIP_REMOTE_SKILLS_INSTALL=true ./meta/sync.sh --skills-only --yes --verbose` exited 0. 295 skills each in `~/.agents/skills` and `~/.gemini/config/skills`. The Claude, Codex and Gemini prompt links resolve to `shared/AGENTS.md`.
+- Verification: serial `bash meta/check-harness.sh` exited 0 (19 evaluator tests, 9 parser tests, shell suites OK). Logs in `.build/daily-maintenance-2026-11-27-A298/`.
+
 # Current task: Hermes personal assistant + Mac maintenance (T3)
 
 - Hermes goal: Mai acts as a personal assistant. It decides, prepares artifacts, performs reversible HamFlow hygiene, and pings Ham via @mention only for a decision, due action or finished result, in Mai voice. No script-runner behavior, no status/backlog reports, no hardcoded items.
