@@ -1,11 +1,12 @@
-# Daily skills/config maintenance — 2026-11-26
+# Daily skills/config maintenance
 
-- Completed configured updates and skills-only sync. `DO_NOT_TRACK=1`, `DISABLE_TELEMETRY=1`, and `HOMEBREW_NO_ANALYTICS=1` enabled. No services, audio, browser settings, PRs, merges, deployment, or paid calls.
-- Toolchain (`meta/update-toolchain.sh`, no active `agent-browser` sessions): `codex` cask upgraded `0.171.0 -> 0.172.0`; `skills@latest` resolved to `1.9.0`; `agent-browser` not present on this host; unrelated Homebrew tap migration warnings left alone.
-- Remote update: selected 503 configured skills from the 77 rows in `shared/remote-skills.txt` against `~/.agents/.skill-lock.json` (525 lock keys). Ran `SKILLS_CLONE_CONCURRENCY=1` with `npx --yes skills@latest update -g -y` (explicit names). Changed 167 skill directories (168 updated in CLI log, 1 failed); 0 added, 0 removed; 4 unselected `stitch-*` directories changed during `google-labs-code/stitch-skills` migration; upstream-deleted warnings preserved without automatic removal.
-- Sync: `SKIP_REMOTE_SKILLS_INSTALL=true ./meta/sync.sh --skills-only --yes --verbose` exited 0. 549 global skills in `~/.agents/skills`, 532 Antigravity skills in `~/.gemini/config/skills`; Claude/Gemini/Codex prompt links resolve to `shared/AGENTS.md` and hook links resolve to `shared/hooks/`.
-- Verification: serial `bash meta/check-harness.sh` exited 0 (6 shell suites, 19 evaluator tests, 9 parser tests). All 12 protected-file SHA-256 hashes unchanged.
-- Preservation: pre-existing staged `shared/remote-skills.txt`, untracked `meta/__pycache__/` and `tests/__pycache__/`, and `stash@{0}` (`b94cdac`, `On main: pre-update`) preserved. Logs and hashes in `.build/daily-maintenance-2026-11-26-local/`.
+## Tanyawats-MacBook-Pro.local
+- Date: 2026-11-27. `DO_NOT_TRACK=1`, `DISABLE_TELEMETRY=1`, `HOMEBREW_NO_ANALYTICS=1` enabled. No services, audio, browser settings, PRs, merges, deployment, or paid calls.
+- Reconcile: fast-forwarded `main` (`26321c4 -> 7e1bc5c`) via temporary stash with `--index` pop; preserved staged `shared/remote-skills.txt`, unstaged `shared/AGENTS.md`/`shared/core_profile.md`/`shared/skill_system.md`, untracked `__pycache__`, and `stash@{0}`–`stash@{4}`.
+- Toolchain (`meta/update-toolchain.sh`, `agent-browser` not installed): `codex` current (`0.172.0`); `skills@latest` `1.9.0`; unrelated Homebrew `isen-ng/dotnet-sdk-versions` tap migration warnings left alone.
+- Remote update: selected 503 configured skills from 77 rows in `shared/remote-skills.txt` against `~/.agents/.skill-lock.json` (525 lock keys). Ran `SKILLS_CLONE_CONCURRENCY=1` with `npx --yes skills@latest update -g -y` (explicit names). Changed 8 (`antislop`, `antislop-code`, `antislop-copywriting`, `antislop-human`, `next-cache-components-adoption`, `next-cache-components-optimizer`, `next-dev-loop`, `ui-ux-pro-max`); 0 added, 0 removed; 1 failed (`react:components`: `No matching skills found`); upstream-deleted/multi-path warnings preserved without removal.
+- Sync: `SKIP_REMOTE_SKILLS_INSTALL=true ./meta/sync.sh --skills-only --yes --verbose` exited 0. 549 global skills in `~/.agents/skills`, 532 Antigravity skills in `~/.gemini/config/skills`; Claude/Gemini/Codex prompt and hook links verified.
+- Verification: serial `bash meta/check-harness.sh` exited 0 (6 shell suites, 19 evaluator tests, 9 parser tests). All 12 protected-file SHA-256 hashes unchanged. Logs in `.build/daily-maintenance-2026-11-27-local/`.
 
 # Current task: Hermes personal assistant + Mac maintenance (T3)
 
